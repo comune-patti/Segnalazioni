@@ -574,15 +574,41 @@ header p {
 }
 .map-home-btn:hover { background: #f8f4ef; color: var(--amber); }
 
-/* Layer control Leaflet — etichette sempre visibili */
-.leaflet-control-layers-expanded {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.82rem;
-  border-radius: 8px !important;
-  padding: 0.5rem 0.75rem !important;
-  box-shadow: 0 2px 12px var(--shadow) !important;
+/* Toggle grafico OSM / Satellite */
+.map-layer-toggle {
+  display: flex;
+  background: white;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: 0 2px 14px rgba(26,18,8,0.18);
 }
-.leaflet-control-layers label { display: flex; align-items: center; gap: 0.35rem; padding: 0.1rem 0; cursor: pointer; }
+
+.mlt-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  background: transparent;
+  color: #8a7f70;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.18s;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.mlt-btn:not(.active):hover { background: rgba(26,18,8,0.06); color: var(--ink); }
+
+.mlt-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 1px 4px rgba(26,18,8,0.2);
+}
 
 /* ── FOOTER ──────────────────────────────────────────── */
 footer {

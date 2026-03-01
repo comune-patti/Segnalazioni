@@ -44,12 +44,34 @@ function initMap() {
 
   osmLayer.addTo(map);
 
-  // Layer switcher OSM / Satellite (topright, sempre espanso)
-  L.control.layers(
-    { 'Mappa': osmLayer, 'Satellite': satelliteLayer },
-    {},
-    { position: 'topright', collapsed: false }
-  ).addTo(map);
+  // Toggle grafico OSM / Satellite
+  const LayerToggleControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd(m) {
+      const wrap   = L.DomUtil.create('div', 'map-layer-toggle leaflet-control');
+      const btnOsm = L.DomUtil.create('button', 'mlt-btn active', wrap);
+      btnOsm.innerHTML = '<i class="fa-solid fa-map"></i> Mappa';
+      const btnSat = L.DomUtil.create('button', 'mlt-btn', wrap);
+      btnSat.innerHTML = '<i class="fa-solid fa-satellite"></i> Satellite';
+
+      L.DomEvent.disableClickPropagation(wrap);
+
+      L.DomEvent.on(btnOsm, 'click', () => {
+        m.removeLayer(satelliteLayer);
+        osmLayer.addTo(m);
+        btnOsm.classList.add('active');
+        btnSat.classList.remove('active');
+      });
+      L.DomEvent.on(btnSat, 'click', () => {
+        m.removeLayer(osmLayer);
+        satelliteLayer.addTo(m);
+        btnSat.classList.add('active');
+        btnOsm.classList.remove('active');
+      });
+      return wrap;
+    }
+  });
+  new LayerToggleControl().addTo(map);
 
   // Pulsante Home — riporta la vista su tutti i marker visibili
   const HomeControl = L.Control.extend({
