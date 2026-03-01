@@ -114,16 +114,23 @@ async function loadData() {
     return;
   }
 
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+
   try {
-    const res  = await fetch(url + '&t=' + Date.now());
+    const res  = await fetch(url + '&t=' + Date.now(), { signal: controller.signal });
     const text = await res.text();
+    clearTimeout(timeoutId);
     allReports = parseCSV(text);
     renderAll();
+    document.getElementById('loadingOverlay').style.display = 'none';
   } catch(e) {
-    showError('Impossibile caricare i dati da Google Sheets.');
+    clearTimeout(timeoutId);
+    const msg = e.name === 'AbortError'
+      ? '⏱ Caricamento troppo lento. Controlla la connessione o riprova.'
+      : '❌ Impossibile caricare le segnalazioni. Controlla la connessione o riprova tra qualche minuto.';
+    showError(msg);
   }
-
-  document.getElementById('loadingOverlay').style.display = 'none';
 }
 
 function parseCSV(text) {
@@ -217,8 +224,15 @@ function showDemoData() {
 }
 
 function showError(msg) {
-  document.getElementById('loadingOverlay').innerHTML =
-    `<p style="color:#c0392b;padding:1rem;text-align:center;">${msg}</p>`;
+  document.getElementById('loadingOverlay').innerHTML = `
+    <div style="text-align:center;padding:1.5rem 1rem;">
+      <p style="color:#c0392b;margin-bottom:0.85rem;font-size:0.9rem;line-height:1.5;">${msg}</p>
+      <button onclick="loadData()"
+        style="background:none;border:1.5px solid #c0392b;border-radius:8px;padding:0.4rem 1rem;
+               font-size:0.85rem;cursor:pointer;color:#c0392b;font-family:'DM Sans',sans-serif;">
+        🔄 Riprova
+      </button>
+    </div>`;
 }
 
 // ─────────────────────────────────────────────────────────

@@ -116,11 +116,42 @@ function renderStats(aperte, risolte) {
   requestAnimationFrame(() => renderCharts(_allReports));
 }
 
-function updateStatCards(reports) {
-  document.getElementById('scTotale').textContent  = reports.length;
-  document.getElementById('scAperte').textContent  = reports.filter(r => r.Stato !== 'Risolta' && r.Stato !== 'Chiusa').length;
-  document.getElementById('scAlta').textContent    = reports.filter(r => r.Urgenza === 'Alta').length;
-  document.getElementById('scRisolte').textContent = reports.filter(r => r.Stato === 'Risolta').length;
+function updateStatCards(reports, filterLabel) {
+  const totale  = reports.length;
+  const aperte  = reports.filter(r => r.Stato !== 'Risolta' && r.Stato !== 'Chiusa').length;
+  const alta    = reports.filter(r => r.Urgenza === 'Alta').length;
+  const risolte = reports.filter(r => r.Stato === 'Risolta').length;
+
+  const totaleGlob  = _allReports.length;
+  const aperteGlob  = _allReports.filter(r => r.Stato !== 'Risolta' && r.Stato !== 'Chiusa').length;
+  const altaGlob    = _allReports.filter(r => r.Urgenza === 'Alta').length;
+  const risolteGlob = _allReports.filter(r => r.Stato === 'Risolta').length;
+
+  const isFiltered = !!filterLabel;
+
+  function setCard(numId, val, total) {
+    const numEl = document.getElementById(numId);
+    numEl.textContent = val;
+
+    const existing = numEl.parentElement.querySelector('.sc-filter-badge');
+    if (existing) existing.remove();
+
+    if (isFiltered) {
+      const badge = document.createElement('div');
+      badge.className = 'sc-filter-badge';
+      badge.textContent = `${val} di ${total} · ${filterLabel}`;
+      numEl.parentElement.appendChild(badge);
+    }
+  }
+
+  setCard('scTotale',  totale,  totaleGlob);
+  setCard('scAperte',  aperte,  aperteGlob);
+  setCard('scAlta',    alta,    altaGlob);
+  setCard('scRisolte', risolte, risolteGlob);
+
+  document.querySelectorAll('.stat-card').forEach(c => {
+    c.classList.toggle('filtered', isFiltered);
+  });
 }
 
 function populateCategoryFilter(reports) {
@@ -161,7 +192,7 @@ function filterByCategory(cat) {
   const reports = cat ? _allReports.filter(r => r.Categoria === cat) : _allReports;
 
   // Aggiorna stat cards con dati filtrati
-  updateStatCards(reports);
+  updateStatCards(reports, cat || '');
 
   // Distruggi e ridisegna i grafici
   ['chartCategorie', 'chartUrgenza', 'chartStato', 'chartTrend'].forEach(id => {

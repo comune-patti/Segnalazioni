@@ -156,6 +156,21 @@ body {
 .stat-card.danger .sc-num { color: var(--rust); }
 .stat-card.ok     .sc-num { color: var(--sage); }
 
+.stat-card.filtered {
+  border-color: var(--amber);
+  background: rgba(212,130,10,0.04);
+}
+
+.sc-filter-badge {
+  font-size: 0.65rem;
+  color: var(--amber);
+  margin-top: 0.4rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── FILTER BAR ──────────────────────────────────────── */
 .filter-bar {
   display: flex;

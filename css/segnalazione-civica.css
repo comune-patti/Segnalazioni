@@ -716,6 +716,19 @@ textarea { resize: vertical; min-height: 90px; }
 
 .btn-next:hover { background: var(--amber); }
 
+/* WARN BANNER (success card) */
+.warn-banner {
+  background: #fff8e1;
+  border: 1.5px solid #f4c542;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.82rem;
+  color: #6a4f00;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
 /* EXIF BANNER (step 2) */
 .exif-banner {
   background: #fff8e1;

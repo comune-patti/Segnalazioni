@@ -308,7 +308,10 @@
         <button id="copyTokenBtn" onclick="copyToken()" class="copy-btn-small" title="Copia token">📋 Copia</button>
       </div>
       <p class="token-hint">Conserva questo codice: serve alla PA per marcare la segnalazione come risolta.</p>
-      <p id="successDetail" style="margin-bottom:1rem;"></p>
+      <div class="warn-banner" id="emailWarnBanner" style="display:none">
+        ⚠️ <strong>Nota:</strong> il messaggio email si apre nel tuo client di posta. Verifica di averlo inviato prima di chiudere.
+      </div>
+      <p id="successDetail" style="margin-bottom:0.5rem;"></p>
       <div class="channels-sent" id="channelsSent"></div>
       <div class="copy-reminder" id="copyReminder">
         💡 Hai copiato il tuo ID segnalazione? Ne avrai bisogno per seguire l'evoluzione.

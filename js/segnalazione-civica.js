@@ -695,8 +695,12 @@ async function sendReport() {
   document.getElementById('successDetail').textContent =
     'Segnalazione registrata nell\'archivio. I canali selezionati sono stati aperti.';
 
+  const hasEmail = channelsBadges.some(b => b.includes('🏛️') || b.includes('CC'));
+  const warnBanner = document.getElementById('emailWarnBanner');
+  if (warnBanner) warnBanner.style.display = hasEmail ? 'block' : 'none';
+
   const badgesEl = document.getElementById('channelsSent');
-  badgesEl.innerHTML = channelsBadges.map(b => `<span class="channel-badge">${b}</span>`).join('');
+  badgesEl.innerHTML = channelsBadges.map(b => `<span class="channel-badge">✓ ${b}</span>`).join('');
 
   document.querySelectorAll('.section-card').forEach(c => c.classList.remove('visible'));
   document.getElementById('cardSuccess').classList.add('visible');
