@@ -745,18 +745,19 @@ async function loadData() {
 }
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  const rows = splitCSVRows(normalized);
+  if (rows.length < 2) return [];
 
-  const headers = parseCSVLine(lines[0]);
+  const headers = parseCSVLine(rows[0]);
   const reports = [];
 
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const vals = parseCSVLine(lines[i]);
+  for (let i = 1; i < rows.length; i++) {
+    if (!rows[i].trim()) continue;
+    const vals = parseCSVLine(rows[i]);
     const obj = {};
     headers.forEach((h, idx) => {
-      obj[h.trim()] = (vals[idx] || '').trim();
+      obj[h.trim()] = (vals[idx] !== undefined ? vals[idx] : '').trim();
     });
     // Salta righe senza latitudine valida
     if (!obj.Lat || isNaN(parseFloat(obj.Lat))) continue;
@@ -764,6 +765,27 @@ function parseCSV(text) {
   }
 
   return reports;
+}
+
+// Divide il testo CSV in righe logiche rispettando i campi quoted multiriga
+function splitCSVRows(text) {
+  const rows = [];
+  let rowStart = 0;
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuotes && text[i + 1] === '"') { i++; } // "" escaped quote
+      else inQuotes = !inQuotes;
+    } else if (ch === '\n' && !inQuotes) {
+      rows.push(text.slice(rowStart, i));
+      rowStart = i + 1;
+    }
+  }
+  const last = text.slice(rowStart);
+  if (last.trim()) rows.push(last);
+  return rows;
 }
 
 function parseCSVLine(line) {
