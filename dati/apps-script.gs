@@ -9,7 +9,7 @@
 const SHEET_ID = '1Wy86M342so7EHLi3F-G5UNvXFq058Zr5EKAPhjNS3FM';
 
 // Nome del foglio (tab in basso nel foglio — di solito "Foglio1")
-const SHEET_NAME = 'Foglio1';
+const SHEET_NAME = 'Main';
 
 // Ordine colonne — deve corrispondere ESATTAMENTE all'intestazione del foglio
 const COLUMNS = [
