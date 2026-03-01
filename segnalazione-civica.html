@@ -768,11 +768,11 @@
       <label>Descrizione (opzionale)</label>
       <textarea id="descr" placeholder="Es: La buca si trova all'angolo con Via Roma, è larga circa 40cm..." oninput="updatePreview()"></textarea>
 
-      <label>Nome o Nickname (opzionale)</label>
-      <input type="text" id="nome" placeholder="Cittadino anonimo" oninput="updatePreview()">
+      <label>Nome o Nickname *</label>
+      <input type="text" id="nome" placeholder="Il tuo nome o nickname" oninput="updatePreview()" required>
 
-      <label>Email (opzionale — per aggiornamenti)</label>
-      <input type="email" id="email" placeholder="tua@email.it">
+      <label>Email * <span style="font-weight:300;font-size:0.75rem;">(ricevi la conferma di invio)</span></label>
+      <input type="email" id="email" placeholder="tua@email.it" required>
 
       <div class="nav-next">
         <button class="btn-next" onclick="goStep(4)">Avanti — Destinatari →</button>
@@ -858,7 +858,7 @@
     <div class="success-card">
       <span class="success-icon">✅</span>
       <h2>Segnalazione inviata!</h2>
-      <p>Il tuo report è stato trasmesso. Conserva l'ID per seguire l'evoluzione.</p>
+      <p>Il tuo report è stato trasmesso. Riceverai una conferma via email. Conserva l'ID per seguire l'evoluzione.</p>
       <div class="tag-id" id="ticketId">SGN-000000</div>
       <p id="successDetail" style="margin-bottom:1rem;"></p>
       <div class="channels-sent" id="channelsSent"></div>
@@ -1098,6 +1098,18 @@ function goStep(n) {
       alert('Seleziona una categoria prima di continuare.');
       return;
     }
+    const _nome = document.getElementById('nome').value.trim();
+    if (!_nome) {
+      alert('Inserisci il tuo nome o nickname prima di continuare.');
+      document.getElementById('nome').focus();
+      return;
+    }
+    const _email = document.getElementById('email').value.trim();
+    if (!_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(_email)) {
+      alert('Inserisci un indirizzo email valido — ti servirà per ricevere la conferma di invio.');
+      document.getElementById('email').focus();
+      return;
+    }
   }
 
   currentStep = n;
@@ -1162,6 +1174,14 @@ async function sendReport() {
   const cat = document.getElementById('categoria').value;
   if (!cat) { alert('Seleziona una categoria.'); return; }
 
+  // Controllo difensivo (la validazione è già in goStep ma per sicurezza)
+  const nome = document.getElementById('nome').value.trim();
+  const emailSegnalante = document.getElementById('email').value.trim();
+  if (!nome || !emailSegnalante || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailSegnalante)) {
+    alert('Nome ed email sono obbligatori.');
+    return;
+  }
+
   const btn = document.getElementById('sendBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Invio in corso...';
@@ -1174,8 +1194,6 @@ async function sendReport() {
     ? crypto.randomUUID()
     : 'xxxx-xxxx-xxxx-xxxx'.replace(/x/g, () =>
         (Math.random() * 16 | 0).toString(16));
-  const nome = document.getElementById('nome').value || 'Cittadino anonimo';
-  const emailSegnalante = document.getElementById('email').value || '';
   const descr = document.getElementById('descr').value;
   const urgenza = document.getElementById('urgenza').value;
   const addr = document.getElementById('addressInput').value || reportData.address;

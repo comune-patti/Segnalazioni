@@ -44,6 +44,29 @@ jobs:
             --show-error
           echo "File scaricato: $(wc -l < dati/segnalazioni.csv) righe"
 
+      - name: Rimuovi colonna Token_Risoluzione dal CSV pubblico
+        run: |
+          python3 << 'PYEOF'
+          import csv, os
+          CSV_FILE = "dati/segnalazioni.csv"
+          if not os.path.exists(CSV_FILE):
+              print("CSV non trovato, skip.")
+              exit(0)
+          with open(CSV_FILE, newline='', encoding='utf-8') as f:
+              reader = csv.DictReader(f)
+              rows = list(reader)
+              fieldnames = list(reader.fieldnames or [])
+          if 'Token_Risoluzione' not in fieldnames:
+              print("Token_Risoluzione non presente nel CSV — nessuna modifica.")
+              exit(0)
+          public_fields = [f for f in fieldnames if f != 'Token_Risoluzione']
+          with open(CSV_FILE, 'w', newline='', encoding='utf-8') as f:
+              writer = csv.DictWriter(f, fieldnames=public_fields, extrasaction='ignore')
+              writer.writeheader()
+              writer.writerows(rows)
+          print(f"✓ Colonna Token_Risoluzione rimossa ({len(rows)} righe)")
+          PYEOF
+
       - name: Commit e push se ci sono modifiche
         run: |
           git config user.name  "github-actions[bot]"

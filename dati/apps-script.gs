@@ -52,6 +52,34 @@ const COLUMNS = [
 ];
 
 // ───────────────────────────────────────────────────────────────
+//  ensureHeaders — verifica che il foglio abbia tutte le colonne
+//  di COLUMNS come intestazione nella riga 1.
+//  Se il foglio è vuoto le crea; se mancano colonne le aggiunge.
+// ───────────────────────────────────────────────────────────────
+function ensureHeaders(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(COLUMNS);
+    const h = sheet.getRange(1, 1, 1, COLUMNS.length);
+    h.setFontWeight('bold');
+    h.setBackground('#1a1208');
+    h.setFontColor('#f5f0e8');
+    return;
+  }
+
+  // Foglio già popolato: aggiungi le colonne mancanti in fondo
+  const existing = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const missing  = COLUMNS.filter(col => !existing.includes(col));
+  if (missing.length === 0) return;
+
+  const startCol = existing.length + 1;
+  const newRange = sheet.getRange(1, startCol, 1, missing.length);
+  newRange.setValues([missing]);
+  newRange.setFontWeight('bold');
+  newRange.setBackground('#1a1208');
+  newRange.setFontColor('#f5f0e8');
+}
+
+// ───────────────────────────────────────────────────────────────
 //  doPost — riceve i dati dall'app e li scrive nel foglio
 //           oppure aggiorna lo stato di una segnalazione esistente
 // ───────────────────────────────────────────────────────────────
@@ -69,19 +97,35 @@ function doPost(e) {
     }
 
     // Azione default: inserisci nuova segnalazione
-    // Se il foglio è vuoto, scrivi l'intestazione
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(COLUMNS);
-      // Formatta intestazione: grassetto + sfondo scuro
-      const header = sheet.getRange(1, 1, 1, COLUMNS.length);
-      header.setFontWeight('bold');
-      header.setBackground('#1a1208');
-      header.setFontColor('#f5f0e8');
-    }
+    ensureHeaders(sheet);
 
     // Costruisci la riga nello stesso ordine di COLUMNS
     const row = COLUMNS.map(col => data[col] !== undefined ? data[col] : '');
     sheet.appendRow(row);
+
+    // Email di conferma al segnalante (solo se ha fornito l'email)
+    if (data.Email_Segnalante) {
+      try {
+        const subject = `[SegnalaOra] Segnalazione ricevuta — ${data.ID_Segnalazione}`;
+        const body = [
+          `Ciao ${data.Nome_Segnalante || 'Cittadino'},`,
+          ``,
+          `La tua segnalazione è stata registrata con successo nel sistema SegnalaOra.`,
+          ``,
+          `📋 ID segnalazione: ${data.ID_Segnalazione}`,
+          `📍 Categoria: ${data.Categoria_Emoji} ${data.Categoria}`,
+          `📌 Luogo: ${data.Indirizzo_Completo}`,
+          `🕐 Data/ora: ${data.Data} ${data.Ora}`,
+          ``,
+          `Conserva questo ID per seguire l'evoluzione della segnalazione.`,
+          ``,
+          `— SegnalaOra`,
+        ].join('\n');
+        GmailApp.sendEmail(data.Email_Segnalante, subject, body);
+      } catch(mailErr) {
+        // Non bloccare l'invio se l'email fallisce
+      }
+    }
 
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true, id: data.ID_Segnalazione }))
