@@ -1,2 +1,13 @@
 ID_Segnalazione,Timestamp_UTC,Data,Ora,Categoria,Categoria_Emoji,Urgenza,Descrizione,Nome_Segnalante,Email_Segnalante,Lat,Long,Indirizzo_Completo,Via,Numero_Civico,CAP,Comune,Provincia,Regione,Fonte_Posizione,Accuratezza_GPS_m,Destinatari,Canale_Email,Canale_WhatsApp,Canale_Twitter,Canale_Facebook,Ha_Immagine,Dimensioni_Immagine,Testo_Messaggio,URL_Segnalazione,URL_Immagine,Stato,Note_Ufficio,Operatore,Data_Presa_Carico,Data_Risoluzione
-SGN-1748291234567,2025-05-26T10:30:00Z,26/05/2025,10:30,Buche e dissesti stradali,🕳️,Alta,Buca profonda circa 30cm all'incrocio con Via Roma. Pericolosa per bici e motorini.,Mario Rossi,mario@esempio.it,38.115556,13.361389,"Via Maqueda 100, 90134 Palermo PA",Via Maqueda,100,90134,Palermo,PA,Sicilia,GPS,5,Comune;Polizia Locale,Sì,Sì,Sì,No,Sì,1280x960,"📍 Segnalazione Civica — 🔴 URGENTE — 🕳️ Buche e dissesti stradali | 📌 Via Maqueda 100, Palermo | 📝 Buca profonda circa 30cm... | 👤 Mario Rossi | 🕐 26/05/2025 10:30 | #SegnalaOra",https://tuosito.github.io/Segnalazioni/,,Nuova,,,,
+SGN-1772372506497,2026-03-01T13:41:46.497Z,01/03/2026,14:41,Alberi e verde pubblico,🌳,Alta,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eget eros quis lacus volutpat condimentum ut sit amet justo. Sed et tempor lacus. Sed imperdiet posuere metus. Fusce sed fermentum sem, eget dignissim nunc. Nam lectus est, egestas quis rutrum a, convallis vel nibh.",Gianni,gbvitrano@gmail.com,38.118748,13.367937,"Via della Cala, La Loggia, I Circoscrizione, Palermo, Sicilia, 90133, Italia",Via della Cala,,90133,Palermo,Palermo,Sicilia,Manuale,,email,Sì,No,No,No,Sì,1024x1024,"📍 Segnalazione Civica — 🔴 URGENTE — Alberi e verde pubblico
+📌 Luogo: Via della Cala, La Loggia, I Circoscrizione, Palermo, Sicilia, 90133, Italia
+📝 Note: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eget eros quis lacus volutpat condimentum ut sit amet justo. Sed et tempor lacus. Sed imperdiet posuere metus. Fusce sed fermentum sem, eget dignissim nunc. Nam lectus est, egestas quis rutrum a, convallis vel nibh.
+👤 Segnalato da: Gianni
+🕐 01/03/2026, 14:41:46
+#SegnalaOra #Alberieverdepubblico
+SGN-1772372506497
+
+──────────────────────────────────────
+Per segnare questa segnalazione come RISOLTA:
+https://gbvitrano.github.io/Segnalazioni/index.html?risolvi=c3b04ada-9201-4c92-affa-b1cc65306cdf
+──────────────────────────────────────",https://gbvitrano.github.io/Segnalazioni/segnalazione-civica.html,Risolta,,,,01/03/2026,c3b04ada-9201-4c92-affa-b1cc65306cdf
