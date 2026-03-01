@@ -291,8 +291,8 @@
     line-height: 1.5;
     display: none;
   }
-  .resolve-result.ok  { background: #e8f5e9; color: #2e7d32; }
-  .resolve-result.err { background: #fdecea; color: #c62828; }
+  .resolve-result.ok  { display: block; background: #e8f5e9; color: #2e7d32; }
+  .resolve-result.err { display: block; background: #fdecea; color: #c62828; }
 
   /* LAYOUT */
   .app-body {
@@ -570,24 +570,56 @@
   .legend-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
   .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-  /* MOBILE */
+  /* ─── TABLET (641–900px) ─────────────────────────── */
+  @media (min-width: 641px) and (max-width: 900px) {
+    :root { --panel: 272px; }
+  }
+
+  /* ─── MOBILE (≤640px) ────────────────────────────── */
   @media (max-width: 640px) {
+
+    /* Header compatto */
+    header { padding: 0.5rem 0.8rem; gap: 0.45rem; }
+    header p { display: none; }
+    .btn-report { padding: 0.42rem 0.65rem; font-size: 0.77rem; }
+    .btn-resolve-text { display: none; } /* "Segna risolta" → solo emoji ✅ */
+
+    /* Layout mappa + pannello */
+    .app-body { flex-direction: column; }
+    #map { flex: none; height: 54vh; }
+
+    /* Pannello — bottom sheet */
     .side-panel {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       width: 100%;
-      height: 45vh;
+      height: 46vh;
       border-right: none;
-      border-top: 1px solid rgba(26,18,8,0.1);
+      border-top: 2px solid var(--mist);
     }
 
-    .app-body { flex-direction: column; }
+    /* Handle visivo (indicatore drag) */
+    .panel-header::before {
+      content: '';
+      display: block;
+      width: 36px; height: 4px;
+      background: rgba(26,18,8,0.18);
+      border-radius: 2px;
+      margin: 0 auto 0.75rem;
+    }
 
-    #map { flex: none; height: 55vh; }
+    /* Legenda sopra il pannello */
+    .legend { bottom: 48vh; right: 0.6rem; }
 
-    .legend { bottom: 47vh; }
+    /* Info modal scrollabile su schermi piccoli */
+    .info-modal {
+      max-height: 86vh;
+      overflow-y: auto;
+      padding: 1.4rem 1.1rem 1.1rem;
+    }
+
+    /* Popup Leaflet più largo */
+    .leaflet-popup-content { min-width: 250px; }
   }
 </style>
 </head>
@@ -601,7 +633,7 @@
   </div>
   <div class="header-right">
     <a href="segnalazione-civica.html" class="btn-report">+ Nuova segnalazione</a>
-    <button class="btn-report btn-resolve" onclick="openResolve('')">✅ Segna risolta</button>
+    <button class="btn-report btn-resolve" onclick="openResolve('')">✅ <span class="btn-resolve-text">Segna risolta</span></button>
     <button class="btn-info" onclick="openInfo()" title="Informazioni sul progetto">
       <i class="fa-solid fa-circle-info"></i>
     </button>
