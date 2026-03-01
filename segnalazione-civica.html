@@ -859,7 +859,13 @@
       <span class="success-icon">✅</span>
       <h2>Segnalazione inviata!</h2>
       <p>Il tuo report è stato trasmesso. Riceverai una conferma via email. Conserva l'ID per seguire l'evoluzione.</p>
-      <div class="tag-id" id="ticketId">SGN-000000</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:1.5rem;">
+        <div class="tag-id" id="ticketId" style="margin-bottom:0">SGN-000000</div>
+        <button id="copyIdBtn" onclick="copyTicketId()" title="Copia ID"
+          style="background:none;border:1px solid rgba(26,18,8,0.25);border-radius:6px;padding:0.3rem 0.6rem;cursor:pointer;font-size:0.8rem;font-family:'DM Sans',sans-serif;">
+          📋 Copia
+        </button>
+      </div>
       <p id="successDetail" style="margin-bottom:1rem;"></p>
       <div class="channels-sent" id="channelsSent"></div>
       <br>
@@ -1218,7 +1224,9 @@ async function sendReport() {
   const catEmoji = emojiMap[cat] || '📌';
   const urgLabel = urgenza === 'Alta' ? '🔴 URGENTE — ' : urgenza === 'Bassa' ? '🟢 ' : '🟡 ';
 
-  const siteUrl = CONFIG.comune.siteUrl || window.location.href.split('?')[0];
+  // URL pubblico della mappa (index.html), non del form
+  const siteUrl = CONFIG.comune.siteUrl
+    || window.location.href.replace('segnalazione-civica.html', 'index.html').split('?')[0];
 
   // URL che la PA può aprire per segnare la segnalazione come risolta
   const resolveUrl = window.location.href.split('segnalazione-civica.html')[0] + 'index.html?risolvi=' + token;
@@ -1272,6 +1280,8 @@ async function sendReport() {
       URL_Segnalazione:  siteUrl,
       Stato:             'Nuova',
       Token_Risoluzione: token,
+      // Immagine in base64 — Apps Script la carica in img/ del repo GitHub tramite GitHub API
+      ...(reportData.photoResized ? { imageBase64: reportData.photoResized } : {}),
     };
 
     try {
@@ -1348,6 +1358,15 @@ async function sendReport() {
 }
 
 function resetAll() { location.reload(); }
+
+function copyTicketId() {
+  const id = document.getElementById('ticketId').textContent;
+  navigator.clipboard.writeText(id).then(() => {
+    const btn = document.getElementById('copyIdBtn');
+    btn.textContent = '✓ Copiato';
+    setTimeout(() => { btn.textContent = '📋 Copia'; }, 1800);
+  });
+}
 
 // ─────────────────────────────────────────────
 //  HELP CONFIG

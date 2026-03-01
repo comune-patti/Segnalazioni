@@ -8,10 +8,27 @@
 // ID del tuo Google Sheet (dalla URL: /spreadsheets/d/ID/edit)
 const SHEET_ID = '1Wy86M342so7EHLi3F-G5UNvXFq058Zr5EKAPhjNS3FM';
 
-// Nome del foglio (tab in basso nel foglio — di solito "Foglio1")
+// Nome del foglio (tab in basso nel foglio)
 const SHEET_NAME = 'Main';
 
-// Ordine colonne — deve corrispondere ESATTAMENTE all'intestazione del foglio
+// ─── Configurazione GitHub per upload immagini ───────────────
+//  Le immagini vengono scritte direttamente nella cartella img/
+//  del repository tramite GitHub API.
+//
+//  SETUP (una tantum):
+//  1. Vai su github.com → Settings → Developer settings →
+//     Personal access tokens → Tokens (classic) → Generate new token
+//     Scope richiesto: ✅ repo
+//  2. In Apps Script → Impostazioni progetto → Proprietà script →
+//     aggiungi:  GITHUB_TOKEN = <il tuo token>
+//     (il token non va MAI scritto nel codice sorgente)
+const GITHUB_OWNER  = 'gbvitrano';
+const GITHUB_REPO   = 'Segnalazioni';
+const GITHUB_BRANCH = 'master';
+
+// Elenco di tutte le colonne previste — usato solo da ensureHeaders()
+// per verificare che non manchino intestazioni nel foglio.
+// L'ordine NON è più critico: la scrittura usa le intestazioni reali del foglio.
 const COLUMNS = [
   'ID_Segnalazione',
   'Timestamp_UTC',
@@ -43,6 +60,7 @@ const COLUMNS = [
   'Dimensioni_Immagine',
   'Testo_Messaggio',
   'URL_Segnalazione',
+  'URL_Immagine',        // URL immagine su Drive (compilato automaticamente se DRIVE_FOLDER_ID è impostato)
   'Stato',
   'Note_Ufficio',
   'Operatore',
@@ -53,8 +71,8 @@ const COLUMNS = [
 
 // ───────────────────────────────────────────────────────────────
 //  ensureHeaders — verifica che il foglio abbia tutte le colonne
-//  di COLUMNS come intestazione nella riga 1.
-//  Se il foglio è vuoto le crea; se mancano colonne le aggiunge.
+//  di COLUMNS. Se il foglio è vuoto le crea; se ne mancano
+//  alcune le aggiunge in fondo (senza toccare i dati esistenti).
 // ───────────────────────────────────────────────────────────────
 function ensureHeaders(sheet) {
   if (sheet.getLastRow() === 0) {
@@ -66,7 +84,7 @@ function ensureHeaders(sheet) {
     return;
   }
 
-  // Foglio già popolato: aggiungi le colonne mancanti in fondo
+  // Foglio già popolato: aggiungi solo le colonne assenti
   const existing = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const missing  = COLUMNS.filter(col => !existing.includes(col));
   if (missing.length === 0) return;
@@ -97,10 +115,23 @@ function doPost(e) {
     }
 
     // Azione default: inserisci nuova segnalazione
+
+    // Carica immagine su GitHub (cartella img/ del repository)
+    if (data.imageBase64) {
+      try {
+        const imgUrl = uploadImageToGitHub(data.ID_Segnalazione, data.imageBase64);
+        if (imgUrl) data.URL_Immagine = imgUrl;
+      } catch(imgErr) {
+        // Non bloccare l'invio se il caricamento immagine fallisce
+      }
+    }
+
     ensureHeaders(sheet);
 
-    // Costruisci la riga nello stesso ordine di COLUMNS
-    const row = COLUMNS.map(col => data[col] !== undefined ? data[col] : '');
+    // Costruisci la riga leggendo le intestazioni REALI del foglio
+    // (immune all'ordine delle colonne e a colonne extra come URL_Immagine)
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const row = headers.map(col => data[col] !== undefined ? data[col] : '');
     sheet.appendRow(row);
 
     // Email di conferma al segnalante (solo se ha fornito l'email)
@@ -121,7 +152,10 @@ function doPost(e) {
           ``,
           `— SegnalaOra`,
         ].join('\n');
-        GmailApp.sendEmail(data.Email_Segnalante, subject, body);
+        GmailApp.sendEmail(data.Email_Segnalante, subject, body, {
+          name: 'SegnalaOra (non rispondere)',
+          replyTo: 'noreply@segnalaora.invalid',
+        });
       } catch(mailErr) {
         // Non bloccare l'invio se l'email fallisce
       }
@@ -159,10 +193,18 @@ function risolviSegnalazione(sheet, data) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  const tokenColIdx   = COLUMNS.indexOf('Token_Risoluzione') + 1;
-  const idColIdx      = COLUMNS.indexOf('ID_Segnalazione') + 1;
-  const statoColIdx   = COLUMNS.indexOf('Stato') + 1;
-  const dataRisColIdx = COLUMNS.indexOf('Data_Risoluzione') + 1;
+  // Leggi le intestazioni REALI del foglio per trovare i numeri di colonna corretti
+  const headers     = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const tokenColIdx   = headers.indexOf('Token_Risoluzione') + 1;
+  const idColIdx      = headers.indexOf('ID_Segnalazione') + 1;
+  const statoColIdx   = headers.indexOf('Stato') + 1;
+  const dataRisColIdx = headers.indexOf('Data_Risoluzione') + 1;
+
+  if (statoColIdx === 0 || dataRisColIdx === 0) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: false, error: 'Colonne Stato/Data_Risoluzione non trovate nel foglio' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 
   // 1° tentativo: ricerca per Token_Risoluzione (più sicura)
   let foundRow = -1;
@@ -174,7 +216,7 @@ function risolviSegnalazione(sheet, data) {
   }
 
   // 2° tentativo: fallback per ID (vecchie segnalazioni senza token)
-  if (foundRow === -1 && id) {
+  if (foundRow === -1 && id && idColIdx > 0) {
     const ids = sheet.getRange(2, idColIdx, lastRow - 1, 1).getValues();
     for (let i = 0; i < ids.length; i++) {
       if (ids[i][0] === id) { foundRow = i + 2; break; }
@@ -199,6 +241,39 @@ function risolviSegnalazione(sheet, data) {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true, data: oggi }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ───────────────────────────────────────────────────────────────
+//  uploadImageToGitHub — scrive l'immagine nella cartella img/
+//  del repository tramite GitHub API.
+//  Restituisce l'URL GitHub Pages dell'immagine, o null se fallisce.
+// ───────────────────────────────────────────────────────────────
+function uploadImageToGitHub(id, imageBase64) {
+  const token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  if (!token) return null;   // token non configurato → skip silenzioso
+
+  const b64     = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+  const apiUrl  = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/img/${id}.jpg`;
+
+  const response = UrlFetchApp.fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json',
+    },
+    payload: JSON.stringify({
+      message: `img: aggiunge immagine ${id} [skip ci]`,
+      content: b64,
+      branch: GITHUB_BRANCH,
+    }),
+    muteHttpExceptions: true,
+  });
+
+  if (response.getResponseCode() === 201) {
+    return `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/img/${id}.jpg`;
+  }
+  return null;
 }
 
 // ───────────────────────────────────────────────────────────────

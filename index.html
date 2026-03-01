@@ -941,6 +941,11 @@ function makePopupHTML(r) {
   if (r.Descrizione) {
     html += `<div class="popup-descr">${r.Descrizione.substring(0, 120)}${r.Descrizione.length > 120 ? '...' : ''}</div>`;
   }
+  if (r.URL_Immagine) {
+    html += `<div style="margin-top:0.5rem;"><img src="${r.URL_Immagine}"
+      style="width:100%;border-radius:6px;max-height:150px;object-fit:cover;"
+      loading="lazy" onerror="this.style.display='none'"/></div>`;
+  }
   return html;
 }
 
@@ -1053,8 +1058,13 @@ function confirmResolve() {
   })
   .then(() => {
     res.className = 'resolve-result ok';
-    res.textContent = '✅ Richiesta inviata. La segnalazione sarà visibile nella sezione Risolte entro 1–3 minuti.';
+    res.textContent = '✅ Richiesta inviata. La mappa si aggiornerà a breve…';
     btn.textContent = 'Inviato ✓';
+    // Ricarica i dati dopo 4s — Google Sheets impiega ~1-2s ad aggiornare il CSV pubblicato
+    setTimeout(() => {
+      loadData();
+      res.textContent = '✅ Mappa aggiornata. La segnalazione è ora nella sezione Risolte.';
+    }, 4000);
   })
   .catch(() => {
     res.className = 'resolve-result err';
