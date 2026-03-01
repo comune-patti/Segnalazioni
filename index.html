@@ -130,6 +130,53 @@
     backdrop-filter: blur(4px);
   }
   .info-overlay.open { display: flex; }
+
+  /* ── Lightbox immagine ── */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 9500;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 92vw;
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    object-fit: contain;
+    cursor: default;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 1.4rem;
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .lightbox-close:hover { background: rgba(255,255,255,0.3); }
+  .popup-img-thumb {
+    width: 100%;
+    border-radius: 6px;
+    max-height: 220px;
+    object-fit: contain;
+    background: #f0ece3;
+    cursor: zoom-in;
+    margin-top: 0.5rem;
+    display: block;
+  }
   .info-modal {
     background: var(--paper);
     color: var(--ink);
@@ -617,6 +664,12 @@
   </div>
 </div>
 
+<!-- LIGHTBOX IMMAGINE -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()" title="Chiudi">&#x2715;</button>
+  <img id="lightboxImg" src="" alt="Immagine segnalazione" onclick="event.stopPropagation()">
+</div>
+
 <div class="app-body">
 
   <!-- PANNELLO -->
@@ -964,9 +1017,10 @@ function makePopupHTML(r) {
     html += `<div class="popup-descr">${r.Descrizione.substring(0, 120)}${r.Descrizione.length > 120 ? '...' : ''}</div>`;
   }
   if (r.URL_Immagine) {
-    html += `<div style="margin-top:0.5rem;"><img src="${r.URL_Immagine}"
-      style="width:100%;border-radius:6px;max-height:150px;object-fit:cover;"
-      loading="lazy" onerror="this.style.display='none'"/></div>`;
+    html += `<img class="popup-img-thumb" src="${r.URL_Immagine}"
+      loading="lazy" title="Clicca per ingrandire"
+      onclick="openLightbox('${r.URL_Immagine}')"
+      onerror="this.style.display='none'">`;
   }
   return html;
 }
@@ -1036,6 +1090,15 @@ loadData();
 function openInfo()  { document.getElementById('infoOverlay').classList.add('open'); }
 function closeInfo() { document.getElementById('infoOverlay').classList.remove('open'); }
 
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightboxImg').src = '';
+}
+
 // ─── RISOLUZIONE SEGNALAZIONE ─────────────────
 function openResolve(id) {
   const input = document.getElementById('resolveIdDisplay');
@@ -1097,7 +1160,7 @@ function confirmResolve() {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeInfo(); closeResolve(); }
+  if (e.key === 'Escape') { closeInfo(); closeResolve(); closeLightbox(); }
 });
 
 // Rileva ?risolvi=ID nell'URL e apre il modal automaticamente
