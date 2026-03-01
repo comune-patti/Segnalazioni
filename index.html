@@ -693,8 +693,8 @@ const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsv5ems
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwiLYj4k102Vamc5PuqYp6euSVnYJh61RtkgTGvXufbLV3R_r-j2MRCdlavPu2nCFvpmw/exec';
 
-// Posizione default della mappa (centro Italia)
-const MAP_DEFAULT = { lat: 41.9028, lng: 12.4964, zoom: 6 };
+// Posizione default della mappa
+const MAP_DEFAULT = { lat: 38.1157, lng: 13.3615, zoom: 13 };
 
 // ─────────────────────────────────────────────
 //  STATO
@@ -793,11 +793,11 @@ function showDemoData() {
   const fmt = d => d.toLocaleDateString('it-IT');
 
   allReports = [
-    { ID_Segnalazione:'SGN-demo1', Data: fmt(now), Categoria:'Buche e dissesti stradali', Categoria_Emoji:'🕳️', Urgenza:'Alta', Descrizione:'Buca profonda 30cm in mezzo alla carreggiata', Nome_Segnalante:'Mario R.', Indirizzo_Completo:'Via Roma 12, Roma', Via:'Via Roma', Comune:'Roma', Lat:'41.8960', Long:'12.4820', Stato:'Nuova', Fonte_Posizione:'GPS' },
-    { ID_Segnalazione:'SGN-demo2', Data: fmt(new Date(now-86400000)), Categoria:'Illuminazione pubblica guasta', Categoria_Emoji:'💡', Urgenza:'Normale', Descrizione:'Lampione spento da 3 giorni', Nome_Segnalante:'Anna B.', Indirizzo_Completo:'Corso Vittorio 88, Roma', Via:'Corso Vittorio', Comune:'Roma', Lat:'41.8990', Long:'12.4760', Stato:'In lavorazione', Fonte_Posizione:'GPS' },
-    { ID_Segnalazione:'SGN-demo3', Data: fmt(new Date(now-172800000)), Categoria:'Rifiuti abbandonati', Categoria_Emoji:'🗑️', Urgenza:'Normale', Descrizione:'Cumulo di rifiuti ingombranti sul marciapiede', Nome_Segnalante:'Luca M.', Indirizzo_Completo:'Via dei Fori 5, Roma', Via:'Via dei Fori', Comune:'Roma', Lat:'41.8924', Long:'12.4853', Stato:'Risolta', Fonte_Posizione:'EXIF' },
-    { ID_Segnalazione:'SGN-demo4', Data: fmt(new Date(now-259200000)), Categoria:'Segnaletica danneggiata', Categoria_Emoji:'🚧', Urgenza:'Bassa', Descrizione:'Cartello stradale divelta dal vento', Nome_Segnalante:'Sara T.', Indirizzo_Completo:'Piazza Navona, Roma', Via:'Piazza Navona', Comune:'Roma', Lat:'41.8992', Long:'12.4730', Stato:'Nuova', Fonte_Posizione:'Manuale' },
-    { ID_Segnalazione:'SGN-demo5', Data: fmt(new Date(now-345600000)), Categoria:'Alberi e verde pubblico', Categoria_Emoji:'🌳', Urgenza:'Alta', Descrizione:'Albero pericolante dopo la tempesta', Nome_Segnalante:'Paolo G.', Indirizzo_Completo:'Viale Trastevere 200, Roma', Via:'Viale Trastevere', Comune:'Roma', Lat:'41.8860', Long:'12.4700', Stato:'Risolta', Fonte_Posizione:'GPS' },
+    { ID_Segnalazione:'SGN-demo1', Data: fmt(now), Categoria:'Buche e dissesti stradali', Categoria_Emoji:'🕳️', Urgenza:'Alta', Descrizione:'Buca profonda 30cm in mezzo alla carreggiata', Nome_Segnalante:'Mario R.', Indirizzo_Completo:'Via Maqueda 100, Palermo', Via:'Via Maqueda', Comune:'Palermo', Lat:'38.1144', Long:'13.3614', Stato:'Nuova', Fonte_Posizione:'GPS' },
+    { ID_Segnalazione:'SGN-demo2', Data: fmt(new Date(now-86400000)), Categoria:'Illuminazione pubblica guasta', Categoria_Emoji:'💡', Urgenza:'Normale', Descrizione:'Lampione spento da 3 giorni', Nome_Segnalante:'Anna B.', Indirizzo_Completo:'Via Roma 45, Palermo', Via:'Via Roma', Comune:'Palermo', Lat:'38.1172', Long:'13.3644', Stato:'In lavorazione', Fonte_Posizione:'GPS' },
+    { ID_Segnalazione:'SGN-demo3', Data: fmt(new Date(now-172800000)), Categoria:'Rifiuti abbandonati', Categoria_Emoji:'🗑️', Urgenza:'Normale', Descrizione:'Cumulo di rifiuti ingombranti sul marciapiede', Nome_Segnalante:'Luca M.', Indirizzo_Completo:'Piazza Politeama, Palermo', Via:'Piazza Politeama', Comune:'Palermo', Lat:'38.1196', Long:'13.3568', Stato:'Risolta', Fonte_Posizione:'EXIF' },
+    { ID_Segnalazione:'SGN-demo4', Data: fmt(new Date(now-259200000)), Categoria:'Segnaletica danneggiata', Categoria_Emoji:'🚧', Urgenza:'Bassa', Descrizione:'Cartello stradale divelta dal vento', Nome_Segnalante:'Sara T.', Indirizzo_Completo:'Via Libertà 120, Palermo', Via:'Via Libertà', Comune:'Palermo', Lat:'38.1241', Long:'13.3583', Stato:'Nuova', Fonte_Posizione:'Manuale' },
+    { ID_Segnalazione:'SGN-demo5', Data: fmt(new Date(now-345600000)), Categoria:'Alberi e verde pubblico', Categoria_Emoji:'🌳', Urgenza:'Alta', Descrizione:'Albero pericolante dopo la tempesta', Nome_Segnalante:'Paolo G.', Indirizzo_Completo:'Corso Calatafimi 80, Palermo', Via:'Corso Calatafimi', Comune:'Palermo', Lat:'38.1098', Long:'13.3412', Stato:'Risolta', Fonte_Posizione:'GPS' },
   ];
 
   document.getElementById('loadingOverlay').style.display = 'none';
