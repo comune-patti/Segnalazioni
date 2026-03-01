@@ -557,6 +557,33 @@ header p {
 .legend-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
+/* ── CONTROLLI MAPPA (Home + Layer switcher) ─────────── */
+.map-home-btn {
+  width: 30px;
+  height: 30px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  color: #555;
+  border-radius: 2px;
+  padding: 0;
+}
+.map-home-btn:hover { background: #f8f4ef; color: var(--amber); }
+
+/* Layer control Leaflet — etichette sempre visibili */
+.leaflet-control-layers-expanded {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.75rem !important;
+  box-shadow: 0 2px 12px var(--shadow) !important;
+}
+.leaflet-control-layers label { display: flex; align-items: center; gap: 0.35rem; padding: 0.1rem 0; cursor: pointer; }
+
 /* ── FOOTER ──────────────────────────────────────────── */
 footer {
   background: var(--ink);

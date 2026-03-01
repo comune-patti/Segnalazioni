@@ -33,9 +33,46 @@ function initMap() {
     [MAP_DEFAULT.lat, MAP_DEFAULT.lng], MAP_DEFAULT.zoom
   );
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
+  });
+
+  const satelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    attribution: '© <a href="https://maps.google.com" target="_blank">Google Maps</a>',
+    maxZoom: 20
+  });
+
+  osmLayer.addTo(map);
+
+  // Layer switcher OSM / Satellite (topright, sempre espanso)
+  L.control.layers(
+    { 'Mappa': osmLayer, 'Satellite': satelliteLayer },
+    {},
+    { position: 'topright', collapsed: false }
+  ).addTo(map);
+
+  // Pulsante Home — riporta la vista su tutti i marker visibili
+  const HomeControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd() {
+      const wrap = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+      const btn  = L.DomUtil.create('button', 'map-home-btn', wrap);
+      btn.innerHTML = '<i class="fa-solid fa-house"></i>';
+      btn.title     = 'Panoramica — tutte le segnalazioni';
+      L.DomEvent.disableClickPropagation(btn);
+      L.DomEvent.on(btn, 'click', goHome);
+      return wrap;
+    }
+  });
+  new HomeControl().addTo(map);
+}
+
+function goHome() {
+  if (markers.length > 0) {
+    map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), { animate: true });
+  } else {
+    map.setView([MAP_DEFAULT.lat, MAP_DEFAULT.lng], MAP_DEFAULT.zoom, { animate: true });
+  }
 }
 
 // ─────────────────────────────────────────────────────────
