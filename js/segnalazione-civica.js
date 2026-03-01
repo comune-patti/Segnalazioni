@@ -370,6 +370,14 @@ function useExifGps() {
   if (!reportData.exifLat) return;
   setPosition(reportData.exifLat, reportData.exifLng, 'EXIF');
   document.getElementById('geoText').textContent = '✓ Coordinate estratte dai metadati EXIF della foto';
+  const banner = document.getElementById('exifBanner');
+  if (banner) banner.style.display = 'block';
+}
+
+function dismissExifBanner() {
+  const banner = document.getElementById('exifBanner');
+  if (banner) banner.style.display = 'none';
+  getGPS();
 }
 
 function reverseGeocode(lat, lng) {
@@ -520,6 +528,17 @@ async function sendReport() {
 
   // Area amministrativa / società partecipata selezionata e social
   const areaData = _getAreaByValue(document.getElementById('areaSelect').value);
+  if (!areaData && getCCEmails().length === 0) {
+    const sel = document.getElementById('areaSelect');
+    sel.classList.add('invalid');
+    const errEl = document.getElementById('areaSelect-error');
+    if (errEl) { errEl.classList.add('visible'); }
+    sel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    btn.disabled = false;
+    btn.textContent = '✉️ Invia Segnalazione';
+    return;
+  }
+  document.getElementById('areaSelect').classList.remove('invalid');
   const socialSel = document.getElementById('socialSelect');
   const socialKey = socialSel.value;
   const socialOpt = socialKey ? socialSel.selectedOptions[0] : null;

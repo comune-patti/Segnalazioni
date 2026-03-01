@@ -153,6 +153,11 @@
         <span id="geoText">In attesa di posizione...</span>
       </div>
 
+      <div class="exif-banner" id="exifBanner" style="display:none">
+        📸 <strong>Posizione estratta dalla foto (EXIF).</strong> Verifica che il marker corrisponda al luogo del problema. Se non è corretto, trascinalo nella posizione giusta.
+        <button class="exif-banner-btn" onclick="dismissExifBanner()">📡 Usa GPS del dispositivo invece</button>
+      </div>
+
       <div id="map"></div>
 
       <label>Indirizzo rilevato</label>
@@ -241,10 +246,12 @@
 
       <label>Destinatario principale (A:)</label>
       <div class="select-wrap">
-        <select id="areaSelect" onchange="updateAreaInfo()">
+        <select id="areaSelect" onchange="updateAreaInfo(); this.classList.remove('invalid'); document.getElementById('areaSelect-error').classList.remove('visible');">
           <option value="">— Seleziona area —</option>
         </select>
       </div>
+      <small class="field-hint">Seleziona l'ufficio o la società a cui inviare la segnalazione</small>
+      <div class="field-error" id="areaSelect-error">⚠️ Seleziona almeno un destinatario prima di inviare.</div>
       <div class="area-info" id="areaInfo"></div>
 
       <div class="cc-section">

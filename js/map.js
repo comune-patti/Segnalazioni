@@ -231,6 +231,15 @@ function setFilter(type, val, el) {
   renderAll();
 }
 
+function resetFilters() {
+  activeFilters = { urgenza: 'all', stato: 'all' };
+  document.querySelectorAll('.chip').forEach(c => {
+    if (c.dataset.val === 'all') c.classList.add('active');
+    else c.classList.remove('active');
+  });
+  renderAll();
+}
+
 function setViewMode(mode) {
   viewMode = mode;
   document.getElementById('tabAperte').classList.toggle('active', mode === 'aperte');
@@ -354,7 +363,11 @@ function renderList() {
   const list = document.getElementById('reportList');
 
   if (filteredReports.length === 0) {
-    list.innerHTML = '<div class="no-results">Nessuna segnalazione trovata con i filtri selezionati.</div>';
+    const hasFilters = activeFilters.urgenza !== 'all' || activeFilters.stato !== 'all';
+    list.innerHTML = `<div class="no-results">
+      🔍 Nessuna segnalazione trovata${hasFilters ? ' con i filtri selezionati' : ''}.
+      ${hasFilters ? '<br><button class="no-results-reset" onclick="resetFilters()">Rimuovi filtri</button>' : ''}
+    </div>`;
     return;
   }
 

@@ -465,7 +465,22 @@ header p {
   padding: 2rem 1rem;
   color: #8a7f70;
   font-size: 0.85rem;
+  line-height: 1.7;
 }
+
+.no-results-reset {
+  margin-top: 0.5rem;
+  background: none;
+  border: 1.5px solid rgba(60,40,20,0.2);
+  border-radius: 8px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--amber);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+.no-results-reset:hover { border-color: var(--amber); background: rgba(212,130,10,0.06); }
 
 /* ── MAPPA ───────────────────────────────────────────── */
 #map { flex: 1; z-index: 1; }
