@@ -1,16 +1,10 @@
 name: Sincronizza Google Sheets
 
 # ─────────────────────────────────────────────────────────────
-#  Questo workflow scarica il CSV pubblicato da Google Sheets
-#  e lo salva in  dati/segnalazioni.csv  nel repository.
-#
-#  In questo modo index.html può leggere il CSV da GitHub
-#  (più veloce, nessun problema CORS, funziona anche offline).
-#
-#  Prerequisiti:
-#    - Il foglio Google Sheets deve essere pubblicato come CSV
-#      (File → Pubblica sul Web → Formato: CSV → Copia URL)
-#    - Aggiorna SHEETS_CSV_URL qui sotto se cambia l'URL
+#  Scarica i due CSV pubblicati da Google Sheets (fogli query
+#  del foglio Main) e li salva in dati/:
+#    dati/segnalazioni.csv  ← foglio 'Segnalazioni' (aperte)
+#    dati/risolte.csv       ← foglio 'Risolta'
 # ─────────────────────────────────────────────────────────────
 
 on:
@@ -22,7 +16,8 @@ permissions:
   contents: write              # necessario per il commit/push
 
 env:
-  SHEETS_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsv5emsudeZOCiaREWWRFP14r5ZSmMW-WzwBTNv-aUitRaEb8mOy5dbm4KmBjpSwSSn2A-GAL7UGYz/pub?gid=0&single=true&output=csv"
+  CSV_APERTE:  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsv5emsudeZOCiaREWWRFP14r5ZSmMW-WzwBTNv-aUitRaEb8mOy5dbm4KmBjpSwSSn2A-GAL7UGYz/pub?gid=1984873064&single=true&output=csv"
+  CSV_RISOLTE: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsv5emsudeZOCiaREWWRFP14r5ZSmMW-WzwBTNv-aUitRaEb8mOy5dbm4KmBjpSwSSn2A-GAL7UGYz/pub?gid=790985167&single=true&output=csv"
 
 jobs:
   sync:
@@ -35,36 +30,39 @@ jobs:
 
       - name: Scarica CSV da Google Sheets
         run: |
-          echo "Scaricando CSV da Google Sheets..."
-          curl -L \
-            "$SHEETS_CSV_URL" \
-            --output dati/segnalazioni.csv \
-            --fail \
-            --silent \
-            --show-error
-          echo "File scaricato: $(wc -l < dati/segnalazioni.csv) righe"
+          echo "Scaricando segnalazioni aperte..."
+          curl -L "$CSV_APERTE"  --output dati/segnalazioni.csv --fail --silent --show-error
+          echo "Aperte: $(wc -l < dati/segnalazioni.csv) righe"
 
-      - name: Rimuovi colonna Token_Risoluzione dal CSV pubblico
+          echo "Scaricando segnalazioni risolte..."
+          curl -L "$CSV_RISOLTE" --output dati/risolte.csv     --fail --silent --show-error
+          echo "Risolte: $(wc -l < dati/risolte.csv) righe"
+
+      - name: Rimuovi colonna Token_Risoluzione dai CSV pubblici
         run: |
           python3 << 'PYEOF'
           import csv, os
-          CSV_FILE = "dati/segnalazioni.csv"
-          if not os.path.exists(CSV_FILE):
-              print("CSV non trovato, skip.")
-              exit(0)
-          with open(CSV_FILE, newline='', encoding='utf-8') as f:
-              reader = csv.DictReader(f)
-              rows = list(reader)
-              fieldnames = list(reader.fieldnames or [])
-          if 'Token_Risoluzione' not in fieldnames:
-              print("Token_Risoluzione non presente nel CSV — nessuna modifica.")
-              exit(0)
-          public_fields = [f for f in fieldnames if f != 'Token_Risoluzione']
-          with open(CSV_FILE, 'w', newline='', encoding='utf-8') as f:
-              writer = csv.DictWriter(f, fieldnames=public_fields, extrasaction='ignore')
-              writer.writeheader()
-              writer.writerows(rows)
-          print(f"✓ Colonna Token_Risoluzione rimossa ({len(rows)} righe)")
+
+          def strip_token(path):
+              if not os.path.exists(path):
+                  print(f"{path} non trovato, skip.")
+                  return
+              with open(path, newline='', encoding='utf-8') as f:
+                  reader = csv.DictReader(f)
+                  rows = list(reader)
+                  fieldnames = list(reader.fieldnames or [])
+              if 'Token_Risoluzione' not in fieldnames:
+                  print(f"{path}: Token_Risoluzione non presente — nessuna modifica.")
+                  return
+              public_fields = [c for c in fieldnames if c != 'Token_Risoluzione']
+              with open(path, 'w', newline='', encoding='utf-8') as f:
+                  writer = csv.DictWriter(f, fieldnames=public_fields, extrasaction='ignore')
+                  writer.writeheader()
+                  writer.writerows(rows)
+              print(f"✓ {path}: Token_Risoluzione rimossa ({len(rows)} righe)")
+
+          strip_token("dati/segnalazioni.csv")
+          strip_token("dati/risolte.csv")
           PYEOF
 
       - name: Commit e push se ci sono modifiche
@@ -72,14 +70,14 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add dati/segnalazioni.csv
+          git add dati/segnalazioni.csv dati/risolte.csv
 
           if git diff --cached --quiet; then
-            echo "Nessuna modifica rispetto alla versione precedente — skip commit."
+            echo "Nessuna modifica — skip commit."
           else
-            # Conta le segnalazioni (righe senza l'intestazione)
-            ROWS=$(tail -n +2 dati/segnalazioni.csv | grep -c . 2>/dev/null || echo "?")
-            git commit -m "sync: ${ROWS} segnalazioni da Google Sheets [skip ci]"
+            APERTE=$(tail -n +2 dati/segnalazioni.csv | grep -c . 2>/dev/null || echo "?")
+            RISOLTE=$(tail -n +2 dati/risolte.csv     | grep -c . 2>/dev/null || echo "?")
+            git commit -m "sync: ${APERTE} aperte, ${RISOLTE} risolte [skip ci]"
             git push
-            echo "Commit eseguito: ${ROWS} segnalazioni."
+            echo "Commit: ${APERTE} aperte, ${RISOLTE} risolte."
           fi
