@@ -53,10 +53,13 @@ function initMap() {
     options: { position: 'topright' },
     onAdd(m) {
       const wrap   = L.DomUtil.create('div', 'map-layer-toggle leaflet-control');
-      const btnOsm = L.DomUtil.create('button', 'mlt-btn active', wrap);
+      const btnRow = L.DomUtil.create('div', 'mlt-btns', wrap);
+      const btnOsm = L.DomUtil.create('button', 'mlt-btn active', btnRow);
       btnOsm.innerHTML = '<i class="fa-solid fa-map"></i> Mappa';
-      const btnSat = L.DomUtil.create('button', 'mlt-btn', wrap);
+      const btnSat = L.DomUtil.create('button', 'mlt-btn', btnRow);
       btnSat.innerHTML = '<i class="fa-solid fa-satellite"></i> Satellite';
+      const banner = L.DomUtil.create('div', 'mlt-banner', wrap);
+      banner.innerHTML = 'Demo by <a href="https://opendatasicilia.it" target="_blank" rel="noopener">@opendatasicilia</a>';
 
       L.DomEvent.disableClickPropagation(wrap);
 

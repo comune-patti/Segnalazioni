@@ -582,12 +582,39 @@ header p {
 /* Toggle grafico OSM / Satellite */
 .map-layer-toggle {
   display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.mlt-btns {
+  display: flex;
+  gap: 2px;
   background: white;
   border-radius: 10px;
   padding: 3px;
-  gap: 2px;
   box-shadow: 0 2px 14px rgba(26,18,8,0.18);
 }
+
+.mlt-banner {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  background: #ff9900;
+  border-radius: 8px;
+  padding: 5px 10px;
+  box-shadow: 0 2px 8px rgba(255,0,153,0.35);
+  white-space: nowrap;
+}
+
+.mlt-banner a {
+  color: white;
+  text-decoration: none;
+}
+.mlt-banner a:hover { text-decoration: underline; }
 
 .mlt-btn {
   display: flex;
