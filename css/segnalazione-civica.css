@@ -37,8 +37,8 @@ body::before {
    HEADER
 ───────────────────────────────────────────── */
 header {
-  background: var(--ink);
-  color: var(--paper);
+  background: white;
+  color: var(--ink);
   padding: 1.2rem 2rem;
   display: flex;
   align-items: center;
@@ -46,7 +46,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 20px var(--shadow);
+  box-shadow: 0 2px 12px rgba(26,18,8,0.08);
 }
 
 .logo-mark {
@@ -76,9 +76,9 @@ header h1 {
 }
 
 .btn-map-link {
-  background: rgba(255,255,255,0.12);
-  color: var(--paper);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(26,18,8,0.06);
+  color: var(--ink);
+  border: 1px solid rgba(26,18,8,0.14);
   border-radius: 8px;
   padding: 0.4rem 0.9rem;
   font-size: 0.78rem;
@@ -86,28 +86,27 @@ header h1 {
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.btn-map-link:hover { background: rgba(255,255,255,0.2); }
+.btn-map-link:hover { background: rgba(26,18,8,0.10); border-color: var(--amber); color: var(--amber); }
 
 .btn-info {
   background: none;
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid rgba(26,18,8,0.18);
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  color: var(--paper);
+  color: #9a8f80;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
-  opacity: 0.7;
-  transition: opacity 0.2s, border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, color 0.2s;
   flex-shrink: 0;
 }
-.btn-info:hover { opacity: 1; border-color: var(--amber); color: var(--amber); }
+.btn-info:hover { border-color: var(--amber); color: var(--amber); }
 
 /* ─────────────────────────────────────────────
    INFO MODAL
@@ -772,11 +771,11 @@ textarea { resize: vertical; min-height: 90px; }
 ───────────────────────────────────────────── */
 .btn-theme {
   background: none;
-  border: 1px solid rgba(255,255,255,0.22);
+  border: 1px solid rgba(26,18,8,0.18);
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  color: rgba(245,240,232,0.65);
+  color: #9a8f80;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -800,9 +799,10 @@ textarea { resize: vertical; min-height: 90px; }
   header { padding: 0.75rem 1rem; }
   header h1 { font-size: 1.1rem; }
 
-  /* Icona info nascosta su mobile (è nel bottom nav) */
+  /* Pulsanti header nascosti su mobile (sostituiti dal bottom nav) */
+  .btn-map-link { display: none; }
   .btn-info { display: none; }
-  .btn-theme { display: flex; }
+  .btn-theme { display: flex; margin-left: auto; }
 
   /* Bottom nav */
   .bottom-nav {
@@ -854,7 +854,11 @@ textarea { resize: vertical; min-height: 90px; }
 ───────────────────────────────────────────── */
 html.dark body { background: #1a1208; color: #f5f0e8; }
 
-html.dark header { background: #1a1208; box-shadow: 0 2px 20px rgba(0,0,0,0.35); }
+html.dark header { background: #1a1208; color: #f5f0e8; box-shadow: 0 2px 20px rgba(0,0,0,0.35); }
+html.dark .btn-map-link { background: rgba(255,255,255,0.10); color: #f5f0e8; border-color: rgba(255,255,255,0.18); }
+html.dark .btn-map-link:hover { background: rgba(255,255,255,0.16); border-color: var(--amber); color: var(--amber); }
+html.dark .btn-info  { border-color: rgba(255,255,255,0.22); color: rgba(245,240,232,0.6); }
+html.dark .btn-theme { border-color: rgba(255,255,255,0.22); color: rgba(245,240,232,0.6); }
 
 html.dark .form-section {
   background: #1e1812;

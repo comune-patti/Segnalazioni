@@ -325,6 +325,7 @@ body {
 
   .stats-header { padding: 0.75rem 1rem; }
   .sh-back { display: none; }
+  .stats-header .btn-theme { margin-left: auto; }
 
   .stat-cards            { grid-template-columns: 1fr 1fr; }
   .charts-grid           { grid-template-columns: 1fr; }
