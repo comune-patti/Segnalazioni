@@ -22,10 +22,10 @@ const CONFIG = {
 let map, marker;
 let _destinatari     = [];   // da dati/destinatari.json
 let _selectedDest    = null; // { id, nome, descrizione, email, icon, custom? }
-let _mapOpen         = false;
 let _emailDebounce   = null;
 let _ticketCopied    = false;
 let _positionSet     = false;
+const _socialPlatforms = new Set();
 
 let reportData = {
   lat: CONFIG.mapDefault.lat,
@@ -179,20 +179,9 @@ document.getElementById('fileInput').addEventListener('change', async function(e
 //  MAPPA + GPS + GEOCODING
 // ─────────────────────────────────────────────
 function toggleMap() {
-  _mapOpen = !_mapOpen;
-  const wrap = document.getElementById('mapCollapsible');
-  wrap.style.display = _mapOpen ? 'block' : 'none';
-
-  const btn   = document.getElementById('geoStatus');
-  const caret = btn ? btn.querySelector('.geo-bar-caret') : null;
-  if (btn)   btn.setAttribute('aria-expanded', _mapOpen ? 'true' : 'false');
-  if (caret) caret.textContent = (_mapOpen ? '▴' : '▾') + ' Mappa';
-
-  if (_mapOpen && !map) {
-    setTimeout(initMap, 100);
-  } else if (_mapOpen && map) {
-    map.invalidateSize();
-  }
+  // La mappa è sempre visibile — questa funzione rimane per compatibilità
+  if (!map) setTimeout(initMap, 100);
+  else map.invalidateSize();
 }
 
 function initMap() {
@@ -387,15 +376,14 @@ async function sendReport() {
     return;
   }
 
-  // Posizione non confermata → apri mappa e avvisa
+  // Posizione non confermata → avvisa e scrolla alla mappa
   if (!_positionSet) {
     const geoStatus = document.getElementById('geoStatus');
     if (geoStatus) {
       geoStatus.classList.add('geo-warn');
       setTimeout(() => geoStatus.classList.remove('geo-warn'), 3000);
+      geoStatus.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    if (!_mapOpen) toggleMap();
-    document.getElementById('geoStatus').scrollIntoView({ behavior: 'smooth', block: 'center' });
     btn.disabled = false;
     btn.textContent = '✉️ Invia Segnalazione';
     return;
@@ -501,7 +489,36 @@ async function sendReport() {
     await new Promise(r => setTimeout(r, 800));
   }
 
-  // 3. Schermata di successo
+  // 3. Social sharing (se selezionato)
+  if (_socialPlatforms.size > 0) {
+    const rawTags = (document.getElementById('socialTags')?.value || '').trim();
+    const tags = rawTags.split(',').map(t => t.trim()).filter(Boolean)
+      .map(t => t.startsWith('@') ? t : '@' + t).join(' ');
+    const socialMsg = [
+      `${urgLabel}${cat} — ${addr}`,
+      descr ? `📝 ${descr}` : '',
+      tags,
+      `#SegnalaOra #${cat.replace(/[^a-zA-Z0-9]/g, '')}`,
+      siteBase + 'mappa.html',
+    ].filter(Boolean).join('\n');
+    const mapUrl = encodeURIComponent(siteBase + 'mappa.html');
+    const txt    = encodeURIComponent(socialMsg);
+    const urls = {
+      twitter:  `https://twitter.com/intent/tweet?text=${txt}`,
+      whatsapp: `https://wa.me/?text=${txt}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${mapUrl}&quote=${txt}`,
+      telegram: `https://t.me/share/url?url=${mapUrl}&text=${txt}`,
+    };
+    const names = { twitter: 'X/Twitter', whatsapp: 'WhatsApp', facebook: 'Facebook', telegram: 'Telegram' };
+    let delay = toEmail ? 1000 : 200;
+    for (const p of _socialPlatforms) {
+      setTimeout(() => window.open(urls[p], '_blank'), delay);
+      channelsBadges.push('📱 ' + names[p]);
+      delay += 600;
+    }
+  }
+
+  // 4. Schermata di successo
   _ticketCopied = false;
   document.getElementById('ticketId').textContent     = ticketId;
   document.getElementById('resolveToken').textContent = token;
@@ -555,6 +572,20 @@ function copyToken() {
 }
 
 // ─────────────────────────────────────────────
+//  SOCIAL SHARING
+// ─────────────────────────────────────────────
+function toggleSocial(platform) {
+  _socialPlatforms.has(platform)
+    ? _socialPlatforms.delete(platform)
+    : _socialPlatforms.add(platform);
+  document.querySelectorAll('.social-chip').forEach(btn =>
+    btn.classList.toggle('active', _socialPlatforms.has(btn.dataset.platform))
+  );
+  const row = document.getElementById('socialTagsRow');
+  if (row) row.style.display = _socialPlatforms.size > 0 ? 'block' : 'none';
+}
+
+// ─────────────────────────────────────────────
 //  INFO MODAL
 // ─────────────────────────────────────────────
 function openInfo()  { document.getElementById('infoOverlay').classList.add('open'); }
@@ -566,3 +597,4 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo();
 // ─────────────────────────────────────────────
 loadDestinatari();
 getGPS();
+document.addEventListener('DOMContentLoaded', () => { setTimeout(initMap, 150); });

@@ -310,18 +310,16 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.9rem 1.2rem;
+  padding: 0.75rem 1.2rem;
   background: rgba(61,90,71,0.06);
   border: none;
-  border-bottom: 1px solid transparent;
-  cursor: pointer;
+  border-bottom: 1px solid rgba(26,18,8,0.06);
+  cursor: default;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.82rem;
   color: var(--sage);
   text-align: left;
-  transition: background 0.2s;
 }
-.geo-bar:hover { background: rgba(61,90,71,0.1); }
 
 .geo-bar.geo-warn {
   background: rgba(192,57,43,0.08);
@@ -334,13 +332,20 @@ main {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
 }
 
-.geo-bar-caret {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  white-space: nowrap;
+.geo-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex-shrink: 0;
+}
+
+.btn-sm--inline {
+  padding: 0.28rem 0.65rem;
+  font-size: 0.74rem;
 }
 
 .dot {
@@ -365,11 +370,10 @@ main {
   75%       { transform: translateX(4px); }
 }
 
-/* MAP COLLAPSIBLE */
+/* MAP — sempre visibile */
 .map-collapsible {
-  display: none;
+  display: block;
   padding: 1rem 1.2rem 1.2rem;
-  border-top: 1px solid rgba(26,18,8,0.07);
 }
 
 #map {
@@ -850,6 +854,54 @@ textarea { resize: vertical; min-height: 90px; }
 }
 
 /* ─────────────────────────────────────────────
+   SOCIAL SHARING
+───────────────────────────────────────────── */
+.section-hint {
+  font-size: 0.8rem;
+  color: #9a8f80;
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+
+.social-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.social-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid rgba(26,18,8,0.14);
+  border-radius: 50px;
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: #6b5e4e;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.social-chip i { font-size: 0.95rem; }
+.social-chip:hover { border-color: var(--amber); color: var(--amber); }
+.social-chip.active { color: white; }
+.social-chip.active[data-platform="twitter"]  { background: #000;    border-color: #000; }
+.social-chip.active[data-platform="whatsapp"] { background: #25D366; border-color: #25D366; }
+.social-chip.active[data-platform="facebook"] { background: #1877F2; border-color: #1877F2; }
+.social-chip.active[data-platform="telegram"] { background: #229ED9; border-color: #229ED9; }
+
+.social-tags-row { margin-top: 0.2rem; }
+
+.field-hint {
+  font-size: 0.75rem;
+  color: #9a8f80;
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
+/* ─────────────────────────────────────────────
    DARK MODE — classe "dark" su <html>
 ───────────────────────────────────────────── */
 html.dark body { background: #1a1208; color: #f5f0e8; }
@@ -897,8 +949,10 @@ html.dark .cat-expand-btn { border-color: rgba(255,255,255,0.15); color: rgba(24
 html.dark .cat-expand-btn:hover { border-color: var(--amber); color: var(--amber); }
 
 html.dark .geo-bar { background: rgba(61,90,71,0.14); color: #7ecb9e; }
-html.dark .geo-bar:hover { background: rgba(61,90,71,0.22); }
-html.dark .map-collapsible { border-top-color: rgba(255,255,255,0.07); }
+html.dark .social-chip { border-color: rgba(255,255,255,0.15); color: rgba(245,240,232,0.5); }
+html.dark .social-chip:hover { border-color: var(--amber); color: var(--amber); }
+html.dark .section-hint,
+html.dark .field-hint { color: rgba(245,240,232,0.38); }
 
 html.dark .photo-zone { border-color: rgba(255,255,255,0.1); }
 html.dark .photo-zone:hover { background: rgba(212,130,10,0.06); }

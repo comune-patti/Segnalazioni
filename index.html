@@ -97,7 +97,30 @@
 
 <main>
 
-  <!-- ① FOTO -->
+  <!-- ① POSIZIONE — mappa sempre visibile -->
+  <section class="form-section form-section--geo">
+    <div class="geo-bar" id="geoStatus">
+      <div class="geo-bar-left">
+        <div class="dot"></div>
+        <span id="geoText">In attesa di posizione…</span>
+      </div>
+      <div class="geo-bar-right">
+        <button class="btn-sm btn-sm--inline" type="button" onclick="getGPS()">📡 GPS</button>
+        <button class="btn-sm btn-sm--inline" type="button" onclick="useExifGps()" id="btnExif" style="display:none">📸 EXIF</button>
+      </div>
+    </div>
+    <div class="map-collapsible" id="mapCollapsible">
+      <div class="exif-banner" id="exifBanner" style="display:none">
+        📸 <strong>Posizione estratta dalla foto (EXIF).</strong> Verifica che il marker corrisponda al luogo del problema. Se non è corretto, trascinalo nella posizione giusta.
+        <button class="exif-banner-btn" type="button" onclick="dismissExifBanner()">📡 Usa GPS invece</button>
+      </div>
+      <div id="map"></div>
+      <label>Indirizzo rilevato</label>
+      <input type="text" id="addressInput" placeholder="Via/Piazza, Numero Civico — Città">
+    </div>
+  </section>
+
+  <!-- ② FOTO -->
   <section class="form-section">
     <div class="section-title">📷 Foto del problema</div>
     <div class="photo-zone" id="photoZone" onclick="document.getElementById('fileInput').click()">
@@ -114,30 +137,6 @@
     <div class="btn-row" style="margin-top:0.8rem">
       <button class="btn-sm" type="button" onclick="openCamera()">📷 Fotocamera</button>
       <button class="btn-sm" type="button" onclick="openGallery()">🗂️ Galleria</button>
-    </div>
-  </section>
-
-  <!-- ② POSIZIONE -->
-  <section class="form-section form-section--geo">
-    <button class="geo-bar" type="button" id="geoStatus" onclick="toggleMap()" aria-expanded="false">
-      <div class="geo-bar-left">
-        <div class="dot"></div>
-        <span id="geoText">In attesa di posizione…</span>
-      </div>
-      <span class="geo-bar-caret">▾ Mappa</span>
-    </button>
-    <div class="map-collapsible" id="mapCollapsible">
-      <div class="exif-banner" id="exifBanner" style="display:none">
-        📸 <strong>Posizione estratta dalla foto (EXIF).</strong> Verifica che il marker corrisponda al luogo del problema. Se non è corretto, trascinalo nella posizione giusta.
-        <button class="exif-banner-btn" type="button" onclick="dismissExifBanner()">📡 Usa GPS del dispositivo invece</button>
-      </div>
-      <div id="map"></div>
-      <label>Indirizzo rilevato</label>
-      <input type="text" id="addressInput" placeholder="Via/Piazza, Numero Civico — Città">
-      <div class="btn-row">
-        <button class="btn-sm" type="button" onclick="getGPS()">📡 Usa GPS</button>
-        <button class="btn-sm" type="button" onclick="useExifGps()" id="btnExif" style="display:none">📸 Da foto EXIF</button>
-      </div>
     </div>
   </section>
 
@@ -188,7 +187,32 @@
     <div class="field-error" id="email-error">Inserisci un indirizzo email valido (es: nome@dominio.it).</div>
   </section>
 
-  <!-- ⑥ INVIA -->
+  <!-- ⑥ CONDIVIDI -->
+  <section class="form-section">
+    <div class="section-title">📣 Condividi la segnalazione</div>
+    <p class="section-hint">Diffondi il problema sui social per aumentare la visibilità</p>
+    <div class="social-chips" id="socialChips">
+      <button type="button" class="social-chip" data-platform="twitter" onclick="toggleSocial('twitter')">
+        <i class="fa-brands fa-x-twitter"></i><span>X / Twitter</span>
+      </button>
+      <button type="button" class="social-chip" data-platform="whatsapp" onclick="toggleSocial('whatsapp')">
+        <i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span>
+      </button>
+      <button type="button" class="social-chip" data-platform="facebook" onclick="toggleSocial('facebook')">
+        <i class="fa-brands fa-facebook-f"></i><span>Facebook</span>
+      </button>
+      <button type="button" class="social-chip" data-platform="telegram" onclick="toggleSocial('telegram')">
+        <i class="fa-brands fa-telegram"></i><span>Telegram</span>
+      </button>
+    </div>
+    <div class="social-tags-row" id="socialTagsRow" style="display:none">
+      <label>Tagga profili (opzionale)</label>
+      <input type="text" id="socialTags" placeholder="@sindaco, @giornale, @associazione">
+      <p class="field-hint">Profili separati da virgola — verranno inclusi nel post</p>
+    </div>
+  </section>
+
+  <!-- ⑦ INVIA -->
   <section class="form-section form-section--send">
     <button class="send-btn" id="sendBtn" type="button" onclick="sendReport()">
       ✉️ Invia Segnalazione
