@@ -64,13 +64,29 @@ async function loadDestinatari() {
 function buildDestGrid() {
   const grid = document.getElementById('destGrid');
   if (!grid) return;
-  grid.innerHTML = _destinatari.map(d => `
-    <button type="button" class="dest-btn" id="dest-${d.id}" onclick="selectDest('${d.id}')">
+  const VISIBLE = 6;
+  grid.innerHTML = _destinatari.map((d, i) => `
+    <button type="button" class="dest-btn${i >= VISIBLE ? ' dest-extra' : ''}" id="dest-${d.id}" onclick="selectDest('${d.id}')"${i >= VISIBLE ? ' style="display:none"' : ''}>
       <span class="dest-icon">${d.icon}</span>
       <span class="dest-nome">${d.nome}</span>
       <span class="dest-sub">${d.descrizione}</span>
     </button>
   `).join('');
+
+  const extra = _destinatari.length - VISIBLE;
+  const expandBtn = document.getElementById('destExpandBtn');
+  if (expandBtn && extra > 0) {
+    expandBtn.style.display = 'block';
+    expandBtn.textContent = `＋ Mostra altri (${extra})`;
+  }
+}
+
+function toggleDestExpand() {
+  const extras = document.querySelectorAll('.dest-extra');
+  const btn    = document.getElementById('destExpandBtn');
+  const isOpen = extras[0] && extras[0].style.display !== 'none';
+  extras.forEach(e => e.style.display = isOpen ? 'none' : 'flex');
+  btn.textContent = isOpen ? `＋ Mostra altri (${extras.length})` : '− Meno';
 }
 
 function selectDest(id) {
@@ -335,7 +351,7 @@ async function sendReport() {
 
   if (!_selectedDest) {
     document.getElementById('dest-error').classList.add('visible');
-    if (!hasError) document.getElementById('sectionDest') && document.querySelector('.form-section:has(#destGrid)').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!hasError) document.querySelector('.form-section:has(#destGrid)') && document.querySelector('.form-section:has(#destGrid)').scrollIntoView({ behavior: 'smooth', block: 'center' });
     hasError = true;
   }
 

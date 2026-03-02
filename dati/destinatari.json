@@ -7,8 +7,8 @@
   "destinatari": [
     {
       "id": "strade",
-      "nome": "Strade e Viabilità",
-      "descrizione": "Buche, segnaletica, marciapiedi",
+      "nome": "Buche stradali",
+      "descrizione": "Buche, asfalto, marciapiedi",
       "email": "lavori.pubblici@comune.[nome].it",
       "icon": "🕳️",
       "categoria": "Buche e dissesti stradali"
@@ -23,7 +23,7 @@
     },
     {
       "id": "rifiuti",
-      "nome": "Rifiuti e Ambiente",
+      "nome": "Rifiuti",
       "descrizione": "Rifiuti abbandonati, degrado",
       "email": "ambiente@comune.[nome].it",
       "icon": "🗑️",
@@ -39,19 +39,67 @@
     },
     {
       "id": "acqua",
-      "nome": "Acqua e Fognature",
-      "descrizione": "Perdite idriche, allagamenti",
+      "nome": "Perdite idriche",
+      "descrizione": "Perdite, allagamenti, fognature",
       "email": "acqua@comune.[nome].it",
       "icon": "🚰",
       "categoria": "Perdite idriche"
     },
     {
-      "id": "polizia",
-      "nome": "Polizia Locale",
-      "descrizione": "Sicurezza, veicoli abbandonati",
+      "id": "deiezioni",
+      "nome": "Deiezioni",
+      "descrizione": "Deiezioni animali non raccolte",
+      "email": "ambiente@comune.[nome].it",
+      "icon": "🐕",
+      "categoria": "Deiezioni non raccolte"
+    },
+    {
+      "id": "segnaletica",
+      "nome": "Segnaletica",
+      "descrizione": "Cartelli danneggiati, strisce",
+      "email": "lavori.pubblici@comune.[nome].it",
+      "icon": "🚧",
+      "categoria": "Segnaletica danneggiata"
+    },
+    {
+      "id": "veicoli",
+      "nome": "Veicoli abbandonati",
+      "descrizione": "Auto, moto abbandonate",
+      "email": "polizialocale@comune.[nome].it",
+      "icon": "🛺",
+      "categoria": "Veicoli abbandonati"
+    },
+    {
+      "id": "sicurezza",
+      "nome": "Sicurezza",
+      "descrizione": "Degrado, ordine pubblico",
       "email": "polizialocale@comune.[nome].it",
       "icon": "🚔",
       "categoria": "Degrado e sicurezza"
+    },
+    {
+      "id": "barriere",
+      "nome": "Barriere arch.",
+      "descrizione": "Accessibilità disabili",
+      "email": "lavori.pubblici@comune.[nome].it",
+      "icon": "♿",
+      "categoria": "Barriere architettoniche"
+    },
+    {
+      "id": "immobile",
+      "nome": "Immobile",
+      "descrizione": "Edifici pericolanti, crolli",
+      "email": "lavori.pubblici@comune.[nome].it",
+      "icon": "🏚️",
+      "categoria": "Immobile pericolante"
+    },
+    {
+      "id": "rumore",
+      "nome": "Rumore",
+      "descrizione": "Inquinamento acustico",
+      "email": "polizialocale@comune.[nome].it",
+      "icon": "🔊",
+      "categoria": "Inquinamento acustico"
     },
     {
       "id": "altro",
