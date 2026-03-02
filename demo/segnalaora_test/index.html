@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="Segnala problemi urbani al tuo Comune in 3 tap">
+<title>SegnalaOra — Segnalazioni Civiche</title>
+
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ─── RESET & ROOT ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b25;
+  --surface2: #1e2535;
+  --border: #2a3349;
+  --accent: #00e5a0;
+  --accent-dark: #00b87d;
+  --accent2: #ff6b35;
+  --text: #eef2ff;
+  --muted: #7b8db0;
+  --red: #ff4757;
+  --yellow: #ffd32a;
+  --green: #00e5a0;
+  --radius: 18px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* scrollable inner content */
+.screen-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── STATUS BAR ─── */
+.status-bar {
+  background: var(--bg);
+  padding: 10px 20px 6px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ─── SCREENS ─── */
+.screen {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+.screen.active { display: flex; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideBack {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.screen.slide-in  { animation: slideIn  0.25s ease; }
+.screen.slide-back { animation: slideBack 0.25s ease; }
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--border);
+  background: rgba(13,17,23,0.95);
+  backdrop-filter: blur(12px);
+  padding: 10px 0 calc(10px + var(--safe-bottom));
+  flex-shrink: 0;
+}
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 3px; cursor: pointer; padding: 6px 16px;
+  border-radius: 12px; border: none; background: transparent;
+  font-size: 9px; font-weight: 800; color: var(--muted);
+  font-family: 'Manrope', sans-serif;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  transition: all 0.15s;
+}
+.nav-btn .icon { font-size: 22px; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active .icon { filter: drop-shadow(0 0 6px rgba(0,229,160,0.5)); }
+
+/* ─── SHARED COMPONENTS ─── */
+.page-header {
+  padding: 16px 20px 12px;
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.back-btn {
+  width: 38px; height: 38px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text); flex-shrink: 0;
+}
+.page-title { font-size: 19px; font-weight: 900; letter-spacing: -0.5px; }
+
+.section-label {
+  padding: 14px 20px 8px;
+  font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--muted);
+}
+
+/* ─── HOME SCREEN ─── */
+.home-header {
+  padding: 16px 20px 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+.logo em { color: var(--accent); font-style: normal; }
+
+.notif-btn {
+  width: 40px; height: 40px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 13px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; font-size: 17px;
+}
+.notif-dot {
+  width: 9px; height: 9px; background: var(--accent2);
+  border-radius: 50%; position: absolute; top: 7px; right: 7px;
+  border: 2px solid var(--bg);
+}
+
+/* Stats row */
+.stats-row {
+  margin: 0 16px 14px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 8px; text-align: center;
+}
+.stat-num { font-size: 22px; font-weight: 900; letter-spacing: -1px; }
+.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; font-weight: 700; }
+.c-red { color: var(--red); }
+.c-yellow { color: var(--yellow); }
+.c-green { color: var(--green); }
+
+/* Big CTA */
+.cta-btn {
+  margin: 0 16px 16px;
+  background: var(--accent);
+  color: #0d1117;
+  border: none; border-radius: 20px;
+  padding: 20px; width: calc(100% - 32px);
+  font-family: 'Manrope', sans-serif;
+  font-size: 17px; font-weight: 900; letter-spacing: -0.3px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 8px 30px rgba(0,229,160,0.3);
+}
+.cta-btn:hover  { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,229,160,0.4); }
+.cta-btn:active { transform: scale(0.98); }
+.cta-icon { font-size: 24px; }
+
+/* Report list */
+.report-list { padding: 0 16px; }
+.report-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 13px 14px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 8px; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.report-card:hover { border-color: rgba(0,229,160,0.4); }
+.r-thumb {
+  width: 46px; height: 46px;
+  background: var(--surface2); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.r-info { flex: 1; min-width: 0; }
+.r-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-meta  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.badge {
+  font-size: 10px; font-weight: 800;
+  padding: 4px 9px; border-radius: 20px; white-space: nowrap;
+}
+.badge-red    { background: rgba(255,71,87,0.15);  color: var(--red); }
+.badge-yellow { background: rgba(255,211,42,0.15); color: var(--yellow); }
+.badge-green  { background: rgba(0,229,160,0.15);  color: var(--green); }
+
+.empty-state {
+  text-align: center; padding: 40px 20px;
+  color: var(--muted); font-size: 14px;
+}
+.empty-state .big { font-size: 44px; display: block; margin-bottom: 12px; }
+
+/* Loading spinner */
+.spinner {
+  width: 28px; height: 28px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 30px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── REPORT SCREEN ─── */
+.camera-area {
+  margin: 0 16px 12px;
+  height: 190px; border-radius: 20px;
+  background: var(--surface2); border: 2px dashed var(--accent);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.camera-area:hover { background: rgba(0,229,160,0.04); }
+.camera-area .cam-icon { font-size: 44px; opacity: 0.4; }
+.camera-area .cam-txt  { font-size: 13px; color: var(--muted); font-weight: 700; }
+
+#photo-input { display: none; }
+
+.photo-preview-wrap {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+}
+.photo-preview-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.camera-area.has-photo .photo-preview-wrap { display: flex; }
+.camera-area.has-photo .cam-icon,
+.camera-area.has-photo .cam-txt { display: none; }
+.photo-gps-badge {
+  position: absolute; bottom: 10px; right: 10px;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  border-radius: 8px; padding: 4px 9px;
+  font-size: 10px; font-family: 'Space Mono', monospace; color: var(--accent);
+}
+.change-photo {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(0,0,0,0.6); border-radius: 8px;
+  padding: 4px 9px; font-size: 10px; font-weight: 700;
+  color: white; cursor: pointer;
+}
+
+/* GPS strip */
+.gps-strip {
+  margin: 0 16px 12px;
+  background: rgba(0,229,160,0.06);
+  border: 1px solid rgba(0,229,160,0.2);
+  border-radius: 12px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-family: 'Space Mono', monospace; color: var(--accent);
+}
+.gps-strip.loading { color: var(--muted); border-color: var(--border); background: var(--surface); }
+
+/* Category grid */
+.cat-grid {
+  margin: 0 16px 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.cat-btn {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 14px; padding: 12px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; transition: all 0.15s;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  font-family: 'Manrope', sans-serif;
+}
+.cat-btn .emoji { font-size: 26px; }
+.cat-btn:hover    { border-color: rgba(0,229,160,0.5); color: var(--text); }
+.cat-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.07); }
+
+/* Textarea */
+.note-wrap { margin: 0 16px 12px; }
+.note-input {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 13px 14px;
+  color: var(--text); font-family: 'Manrope', sans-serif;
+  font-size: 13px; resize: none; outline: none; height: 68px;
+  transition: border-color 0.2s;
+}
+.note-input::placeholder { color: var(--muted); }
+.note-input:focus { border-color: var(--accent); }
+
+/* Send button */
+.send-btn {
+  margin: 0 16px 16px; width: calc(100% - 32px);
+  background: var(--accent); color: #0d1117;
+  border: none; border-radius: 16px; padding: 18px;
+  font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 900;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s; box-shadow: 0 6px 24px rgba(0,229,160,0.3);
+}
+.send-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ─── SUCCESS SCREEN ─── */
+.success-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px; gap: 16px; text-align: center;
+}
+.success-icon {
+  width: 96px; height: 96px;
+  background: rgba(0,229,160,0.08); border: 3px solid var(--accent);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 44px;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.success-title { font-size: 26px; font-weight: 900; letter-spacing: -1px; }
+.success-sub { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+.ticket-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; width: 100%; text-align: left;
+  font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); line-height: 2;
+}
+.ticket-id { color: var(--accent); font-size: 15px; font-weight: 700; }
+
+.progress-bar { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 15%; }
+
+.progress-labels {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: var(--muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.3px; margin-top: 4px;
+}
+.progress-labels span:first-child { color: var(--accent); }
+
+.btn-outline {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+  color: var(--text); font-family: 'Manrope', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.2s;
+}
+.btn-outline:hover { border-color: var(--accent); }
+
+/* ─── MY REPORTS SCREEN ─── */
+.my-header {
+  padding: 16px 20px 8px;
+  font-size: 20px; font-weight: 900; letter-spacing: -0.5px;
+}
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 20px;
+  font-size: 13px; font-weight: 700;
+  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--red); color: var(--red); }
+.toast.success { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <span id="clock">9:41</span>
+  <span>📡 SegnalaOra</span>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 1 — HOME
+═══════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <div class="screen-content">
+
+    <div class="home-header">
+      <div class="logo">Segnala<em>Ora</em></div>
+      <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-num c-red" id="stat-open">–</div><div class="stat-lbl">Aperte</div></div>
+      <div class="stat-card"><div class="stat-num c-yellow" id="stat-wip">–</div><div class="stat-lbl">In corso</div></div>
+      <div class="stat-card"><div class="stat-num c-green" id="stat-done">–</div><div class="stat-lbl">Risolte</div></div>
+    </div>
+
+    <!-- CTA -->
+    <button class="cta-btn" onclick="goScreen('report', 'forward')">
+      <span class="cta-icon">📸</span> NUOVA SEGNALAZIONE
+    </button>
+
+    <!-- Recent list -->
+    <div class="section-label">Segnalazioni recenti</div>
+    <div class="report-list" id="home-list">
+      <div class="spinner"></div>
+    </div>
+
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="goScreen('home','back')"><span class="icon">🗺️</span>Home</button>
+    <button class="nav-btn" onclick="goScreen('report','forward')"><span class="icon">📸</span>Segnala</button>
+    <button class="nav-btn" onclick="goScreen('mine','forward')"><span class="icon">📋</span>Le mie</button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 2 — NUOVA SEGNALAZIONE
+═══════════════════════════════ -->
+<div class="screen" id="screen-report">
+  <div class="page-header" style="flex-shrink:0">
+    <button class="back-btn" onclick="goScreen('home','back')">←</button>
+    <div class="page-title">Nuova segnalazione</div>
+  </div>
+  <div class="screen-content">
+
+    <!-- Camera -->
+    <div class="camera-area" id="camera-area" onclick="triggerPhoto()">
+      <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(event)">
+      <span class="cam-icon">📷</span>
+      <span class="cam-txt">Tocca per scattare una foto</span>
+      <div class="photo-preview-wrap" id="photo-preview-wrap">
+        <img id="photo-img" src="" alt="foto">
+        <div class="photo-gps-badge" id="gps-badge">📍 GPS...</div>
+        <div class="change-photo" onclick="event.stopPropagation();triggerPhoto()">✏️ Cambia</div>
+      </div>
+    </div>
+
+    <!-- GPS -->
+    <div class="gps-strip loading" id="gps-strip">
+      <span>📍</span>
+      <span id="gps-text">Rilevamento posizione...</span>
+    </div>
+
+    <!-- Categories -->
+    <div class="section-label">Categoria problema</div>
+    <div class="cat-grid" id="cat-grid">
+      <button class="cat-btn" data-cat="Buche/Asfalto"      onclick="selectCat(this)"><span class="emoji">🕳️</span>Buche</button>
+      <button class="cat-btn" data-cat="Illuminazione"      onclick="selectCat(this)"><span class="emoji">💡</span>Illuminazione</button>
+      <button class="cat-btn" data-cat="Rifiuti"            onclick="selectCat(this)"><span class="emoji">🗑️</span>Rifiuti</button>
+      <button class="cat-btn" data-cat="Verde pubblico"     onclick="selectCat(this)"><span class="emoji">🌳</span>Verde</button>
+      <button class="cat-btn" data-cat="Vandalismi"         onclick="selectCat(this)"><span class="emoji">🚧</span>Vandalismi</button>
+      <button class="cat-btn" data-cat="Segnaletica"        onclick="selectCat(this)"><span class="emoji">🚦</span>Segnaletica</button>
+      <button class="cat-btn" data-cat="Marciapiedi"        onclick="selectCat(this)"><span class="emoji">🧱</span>Marciapiedi</button>
+      <button class="cat-btn" data-cat="Acqua/Fognature"    onclick="selectCat(this)"><span class="emoji">💧</span>Acqua</button>
+      <button class="cat-btn" data-cat="Altro"              onclick="selectCat(this)"><span class="emoji">➕</span>Altro</button>
+    </div>
+
+    <!-- Note -->
+    <div class="section-label">Descrizione (opzionale)</div>
+    <div class="note-wrap">
+      <textarea class="note-input" id="note-input"
+        placeholder="Aggiungi dettagli utili al Comune..."></textarea>
+    </div>
+
+    <button class="send-btn" id="send-btn" onclick="submitReport()">
+      📤 INVIA SEGNALAZIONE
+    </button>
+
+    <div style="height:8px"></div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="goScreen('home','back')"><span class="icon">🗺️</span>Home</button>
+    <button class="nav-btn active"><span class="icon">📸</span>Segnala</button>
+    <button class="nav-btn" onclick="goScreen('mine','forward')"><span class="icon">📋</span>Le mie</button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 3 — SUCCESS
+═══════════════════════════════ -->
+<div class="screen" id="screen-success">
+  <div class="screen-content">
+    <div class="success-wrap">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Inviata!</div>
+      <div class="success-sub">
+        Il Comune ha ricevuto la tua segnalazione.<br>
+        Ti aggiorneremo su ogni cambiamento di stato.
+      </div>
+
+      <div class="ticket-card">
+        <div class="ticket-id" id="ticket-id">#SG-000000</div>
+        <div>Categoria: <span id="ticket-cat">–</span></div>
+        <div>Luogo: <span id="ticket-addr">–</span></div>
+        <div>Inviata: <span id="ticket-date">–</span></div>
+        <div style="margin-top:8px;color:var(--text);font-size:10px;">Stato avanzamento</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="progress-labels">
+          <span>Ricevuta ●</span>
+          <span>Assegnata</span>
+          <span>Lavorazione</span>
+          <span>Risolta</span>
+        </div>
+      </div>
+
+      <button class="btn-outline" onclick="goScreen('home','back')">← Torna alla home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 4 — LE MIE SEGNALAZIONI
+═══════════════════════════════ -->
+<div class="screen" id="screen-mine">
+  <div class="my-header">Le mie segnalazioni</div>
+  <div class="screen-content">
+    <div class="report-list" id="mine-list">
+      <div class="spinner"></div>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="goScreen('home','back')"><span class="icon">🗺️</span>Home</button>
+    <button class="nav-btn" onclick="goScreen('report','forward')"><span class="icon">📸</span>Segnala</button>
+    <button class="nav-btn active"><span class="icon">📋</span>Le mie</button>
+  </nav>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

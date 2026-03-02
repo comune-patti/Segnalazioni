@@ -28,6 +28,9 @@ const CONFIG = {
   sheetsCSVRisolte: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsv5emsudeZOCiaREWWRFP14r5ZSmMW-WzwBTNv-aUitRaEb8mOy5dbm4KmBjpSwSSn2A-GAL7UGYz/pub?gid=790985167&single=true&output=csv',
   // Foglio sorgente: https://docs.google.com/spreadsheets/d/1Wy86M342so7EHLi3F-G5UNvXFq058Zr5EKAPhjNS3FM/edit
 
+  // Centro mappa di default (usato quando GPS non disponibile)
+  mapDefault: { lat: 38.1157, lng: 13.3615, zoom: 14 },
+
 };
 
 // ─────────────────────────────────────────────
@@ -41,9 +44,10 @@ let _societaPartecipate = [];  // da dati/società_partecipate.json
 let _ccAreas            = []; // aree aggiunte come CC (array di { email, nome })
 let _emailDebounce      = null;
 let _ticketCopied       = false;
+let _positionSet        = false;  // true solo quando GPS/EXIF/click hanno confermato la posizione
 let reportData = {
-  lat: 41.9028,
-  lng: 12.4964,
+  lat: CONFIG.mapDefault.lat,
+  lng: CONFIG.mapDefault.lng,
   address: '',
   via: '',
   civico: '',
@@ -318,7 +322,7 @@ function initMap() {
     maxZoom: 19
   }).addTo(map);
 
-  marker = L.marker([reportData.lat, reportData.lng], { draggable: true }).addTo(map);
+  marker = L.marker([reportData.lat, reportData.lng], { draggable: true, opacity: 0.35 }).addTo(map);
   marker.on('dragend', e => {
     const p = e.target.getLatLng();
     setPosition(p.lat, p.lng, 'Manuale');
@@ -342,9 +346,11 @@ function setPosition(lat, lng, fonte, accuratezza) {
   reportData.lng = lng;
   reportData.fontePosizione = fonte || 'Manuale';
   reportData.accuratezza = accuratezza || '';
+  _positionSet = true;
   if (map) {
     map.setView([lat, lng], 17);
     marker.setLatLng([lat, lng]);
+    marker.setOpacity(1);
   }
   reverseGeocode(lat, lng);
 }
@@ -484,6 +490,13 @@ function goStep(n) {
   });
 
   if (n === 2) setTimeout(initMap, 150);
+  if (n === 3 && !_positionSet) {
+    const geoText = document.getElementById('geoText');
+    geoText.textContent = '⚠ Clicca sulla mappa o usa il GPS per confermare la posizione.';
+    document.getElementById('geoStatus').classList.add('geo-warn');
+    setTimeout(() => document.getElementById('geoStatus').classList.remove('geo-warn'), 3000);
+    return;
+  }
   if (n === 4) updatePreview();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }

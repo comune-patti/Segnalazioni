@@ -369,6 +369,19 @@ main {
   margin-bottom: 1rem;
 }
 
+.geo-status.geo-warn {
+  background: rgba(192,57,43,0.08);
+  color: var(--rust);
+  outline: 1.5px solid var(--rust);
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+}
+
 .geo-status .dot {
   width: 8px;
   height: 8px;
