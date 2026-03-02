@@ -351,6 +351,10 @@ header p {
   margin-bottom: 0.8rem;
 }
 
+#statsRisolte {
+  grid-template-columns: 1fr;
+}
+
 .stat-box {
   background: var(--mist);
   border-radius: 8px;
