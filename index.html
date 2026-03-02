@@ -17,8 +17,9 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet-hash@0.2.1/leaflet-hash.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
 <link rel="stylesheet" href="css/map.css">
-    <link rel="shortcut icon" href="img/favicon.ico"/> 
-    <link rel="icon" href="img/favicon.png" type="image/png"/> 
+    <link rel="shortcut icon" href="img/favicon.ico"/>
+    <link rel="icon" href="img/favicon.png" type="image/png"/>
+<script src="js/theme.js"></script> 
 
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -70,6 +71,9 @@
     </button>
     <button class="btn-info" onclick="openInfo()" title="Informazioni sul progetto">
       <i class="fa-solid fa-circle-info"></i>
+    </button>
+    <button class="btn-theme" id="themeToggle" onclick="toggleTheme()" title="Passa al tema scuro">
+      <i class="fa-solid fa-moon"></i>
     </button>
   </div>
 </header>

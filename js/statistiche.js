@@ -260,11 +260,11 @@ function renderCategorieChart(reports) {
       scales: {
         x: {
           beginAtZero: true,
-          ticks: { stepSize: 1, font: { family: 'DM Sans', size: 11 } },
-          grid: { color: 'rgba(26,18,8,0.06)' }
+          ticks: { stepSize: 1, font: { family: 'DM Sans', size: 11 }, color: chartTickColor() },
+          grid: { color: chartGridColor() }
         },
         y: {
-          ticks: { font: { family: 'DM Sans', size: 11 } },
+          ticks: { font: { family: 'DM Sans', size: 11 }, color: chartTickColor() },
           grid: { display: false }
         }
       }
@@ -288,7 +288,7 @@ function renderUrgenzaChart(reports) {
       datasets: [{
         data: [counts.Alta, counts.Normale, counts.Bassa],
         backgroundColor: ['#e53535', '#ff9900', '#3cb4d8'],
-        borderColor: '#f5f0e8',
+        borderColor: chartBorderColor(),
         borderWidth: 3,
         hoverOffset: 8,
       }]
@@ -300,7 +300,7 @@ function renderUrgenzaChart(reports) {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { font: { family: 'DM Sans', size: 11 }, padding: 10, boxWidth: 12 }
+          labels: { font: { family: 'DM Sans', size: 11 }, padding: 10, boxWidth: 12, color: chartTickColor() }
         },
         tooltip: {
           callbacks: {
@@ -332,7 +332,7 @@ function renderStatoChart(reports) {
       datasets: [{
         data: entries.map(s => counts[s]),
         backgroundColor: entries.map(s => colors[order.indexOf(s)]),
-        borderColor: '#f5f0e8',
+        borderColor: chartBorderColor(),
         borderWidth: 3,
         hoverOffset: 8,
       }]
@@ -344,7 +344,7 @@ function renderStatoChart(reports) {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { font: { family: 'DM Sans', size: 11 }, padding: 10, boxWidth: 12 }
+          labels: { font: { family: 'DM Sans', size: 11 }, padding: 10, boxWidth: 12, color: chartTickColor() }
         },
         tooltip: {
           callbacks: { label: ctx => `  ${ctx.label}: ${ctx.raw}` }
@@ -395,17 +395,57 @@ function renderTrendChart(reports) {
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { stepSize: 1, font: { family: 'DM Sans', size: 11 } },
-          grid: { color: 'rgba(26,18,8,0.06)' }
+          ticks: { stepSize: 1, font: { family: 'DM Sans', size: 11 }, color: chartTickColor() },
+          grid: { color: chartGridColor() }
         },
         x: {
-          ticks: { font: { family: 'DM Sans', size: 10 }, maxRotation: 45 },
+          ticks: { font: { family: 'DM Sans', size: 10 }, maxRotation: 45, color: chartTickColor() },
           grid: { display: false }
         }
       }
     }
   });
 }
+
+// ─────────────────────────────────────────────
+//  DARK MODE HELPERS
+// ─────────────────────────────────────────────
+function isDark() {
+  return document.documentElement.classList.contains('dark');
+}
+
+function chartGridColor()   { return isDark() ? 'rgba(245,240,232,0.07)' : 'rgba(26,18,8,0.06)'; }
+function chartTickColor()   { return isDark() ? 'rgba(245,240,232,0.5)'  : '#6b5e4e'; }
+function chartBorderColor() { return isDark() ? '#1a1410' : '#f5f0e8'; }
+
+// Aggiorna i colori degli assi di tutti i grafici attivi
+function updateChartColors() {
+  ['chartCategorie', 'chartUrgenza', 'chartStato', 'chartTrend'].forEach(id => {
+    const chart = Chart.getChart(id);
+    if (!chart) return;
+    const grid = chartGridColor();
+    const tick = chartTickColor();
+    Object.values(chart.options.scales || {}).forEach(scale => {
+      if (scale.grid)  scale.grid.color = grid;
+      if (scale.ticks) scale.ticks.color = tick;
+    });
+    if (chart.options.plugins?.legend?.labels) {
+      chart.options.plugins.legend.labels.color = tick;
+    }
+    // aggiorna borderColor delle doughnut (separatore fette)
+    if (chart.data.datasets) {
+      chart.data.datasets.forEach(ds => {
+        if (ds.borderColor !== undefined) ds.borderColor = chartBorderColor();
+      });
+    }
+    chart.update();
+  });
+}
+
+// Re-render completo al cambio tema (i grafici a barre e doughnut usano colori aggiornati)
+document.addEventListener('themechange', function() {
+  updateChartColors();
+});
 
 // ─────────────────────────────────────────────
 //  INIT

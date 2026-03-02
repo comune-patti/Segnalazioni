@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="css/segnalazione-civica.css">
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>
+<script src="js/theme.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87653723-4"></script>
@@ -62,6 +63,9 @@
     <a href="index.html" class="btn-map-link">🗺 Mappa</a>
     <button class="btn-info" onclick="openInfo()" title="Informazioni sul progetto">
       <i class="fa-solid fa-circle-info"></i>
+    </button>
+    <button class="btn-theme" id="themeToggle" onclick="toggleTheme()" title="Tema">
+      <i class="fa-solid fa-moon"></i>
     </button>
   </div>
 </header>
@@ -230,5 +234,25 @@
 </div>
 
 <script src="js/segnalazione-civica.js"></script>
+
+<!-- BOTTOM NAV mobile -->
+<nav class="bottom-nav">
+  <a class="bnav-item" href="index.html">
+    <i class="fa-solid fa-map-location-dot"></i>
+    <span>Mappa</span>
+  </a>
+  <button class="bnav-item bnav-active" type="button">
+    <i class="fa-solid fa-camera"></i>
+    <span>Segnala</span>
+  </button>
+  <a class="bnav-item" href="statistiche.html">
+    <i class="fa-solid fa-chart-simple"></i>
+    <span>Statistiche</span>
+  </a>
+  <button class="bnav-item" type="button" onclick="openInfo()">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>Info</span>
+  </button>
+</nav>
 </body>
 </html>

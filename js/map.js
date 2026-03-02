@@ -450,6 +450,10 @@ function closeInfo() { document.getElementById('infoOverlay').classList.remove('
 
 let _statsLoaded = false;
 function openStats() {
+  if (window.innerWidth <= 640) {
+    window.location.href = 'statistiche.html';
+    return;
+  }
   if (!_statsLoaded) {
     document.getElementById('statsFrame').src = 'statistiche.html';
     _statsLoaded = true;

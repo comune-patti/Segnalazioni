@@ -15,8 +15,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
 <link rel="stylesheet" href="css/statistiche.css">
-    <link rel="shortcut icon" href="img/favicon.ico"/> 
-    <link rel="icon" href="img/favicon.png" type="image/png"/> 
+    <link rel="shortcut icon" href="img/favicon.ico"/>
+    <link rel="icon" href="img/favicon.png" type="image/png"/>
+<script src="js/theme.js"></script> 
 
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -60,6 +61,34 @@
     <p>SegnalaOra · Segnalazioni civiche</p>
   </div>
   <a href="index.html" class="sh-back">← Mappa</a>
+  <button class="btn-theme" id="themeToggle" onclick="toggleTheme()" title="Tema">
+    <i class="fa-solid fa-moon"></i>
+  </button>
+</div>
+
+<!-- INFO MODAL -->
+<div class="info-overlay" id="infoOverlay" onclick="if(event.target===this)closeInfo()">
+  <div class="info-modal">
+    <button class="info-modal-close" onclick="closeInfo()" title="Chiudi">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <h2>📍 SegnalaOra</h2>
+    <p><strong>SegnalaOra</strong> è uno strumento open source per segnalare problemi del territorio al proprio Comune: buche stradali, rifiuti abbandonati, illuminazione pubblica guasta, verde incurato e molto altro.</p>
+    <p><strong>Come funziona:</strong></p>
+    <ol>
+      <li>Carica una foto del problema — il GPS viene estratto automaticamente dall'immagine</li>
+      <li>Verifica la posizione sulla mappa oppure lascia che il GPS del dispositivo la rilevi</li>
+      <li>Scegli a chi inviare, descrivi il problema e inserisci i tuoi dati</li>
+      <li>Invia la segnalazione al Comune — riceverai una conferma via email</li>
+    </ol>
+    <p>Tutte le segnalazioni sono archiviate automaticamente in Google Sheets e visibili sulla mappa pubblica.</p>
+    <div class="credits">
+      <strong>Idea di</strong> Andrea Borruso, Salvatore Fiandaca, Ciro Spataro e Giovan Battista Vitrano<br>
+      By <a href="https://opendatasicilia.it" target="_blank" rel="noopener">@opendatasicilia</a><br><br>
+      <strong>Sviluppo tecnico</strong><br>
+      Web app sviluppata attraverso una collaborazione human–Claude AI (Anthropic).
+    </div>
+  </div>
 </div>
 
 <div id="loadingWrap" class="loading-wrap">
@@ -130,5 +159,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="js/statistiche.js"></script>
+<script>
+function openInfo()  { document.getElementById('infoOverlay').classList.add('open'); }
+function closeInfo() { document.getElementById('infoOverlay').classList.remove('open'); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeInfo(); });
+</script>
+
+<!-- BOTTOM NAV mobile -->
+<nav class="bottom-nav">
+  <a class="bnav-item" href="index.html">
+    <i class="fa-solid fa-map-location-dot"></i>
+    <span>Mappa</span>
+  </a>
+  <a class="bnav-item" href="segnalazione-civica.html">
+    <i class="fa-solid fa-camera"></i>
+    <span>Segnala</span>
+  </a>
+  <button class="bnav-item bnav-active" type="button">
+    <i class="fa-solid fa-chart-simple"></i>
+    <span>Statistiche</span>
+  </button>
+  <button class="bnav-item" type="button" onclick="openInfo()">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>Info</span>
+  </button>
+</nav>
 </body>
 </html>
