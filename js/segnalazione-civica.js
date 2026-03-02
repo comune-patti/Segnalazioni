@@ -323,17 +323,6 @@ function validateEmailField() {
 }
 
 // ─────────────────────────────────────────────
-//  TOOLTIP CATEGORIA
-// ─────────────────────────────────────────────
-function updateCatHint() {
-  const sel  = document.getElementById('categoria');
-  const hint = document.getElementById('catHint');
-  if (!hint) return;
-  const opt  = sel.selectedOptions[0];
-  hint.textContent = (opt && opt.title) ? opt.title : '';
-}
-
-// ─────────────────────────────────────────────
 //  INVIO
 // ─────────────────────────────────────────────
 async function sendReport() {
@@ -343,13 +332,6 @@ async function sendReport() {
 
   // Validazioni
   let hasError = false;
-
-  const cat = document.getElementById('categoria').value;
-  if (!cat) {
-    showFieldError('categoria', 'Seleziona una categoria.');
-    document.getElementById('categoria').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    hasError = true;
-  }
 
   if (!_selectedDest) {
     document.getElementById('dest-error').classList.add('visible');
@@ -413,19 +395,10 @@ async function sendReport() {
     : 'xxxx-xxxx-xxxx-xxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16));
 
   const descr   = document.getElementById('descr').value;
-  const urgenza = document.getElementById('urgenza').value;
-  const addr    = document.getElementById('addressInput').value || reportData.address;
-
-  const emojiMap = {
-    'Buche e dissesti stradali': '🕳️', 'Illuminazione pubblica guasta': '💡',
-    'Rifiuti abbandonati': '🗑️',        'Alberi e verde pubblico': '🌳',
-    'Perdite idriche': '🚰',             'Deiezioni non raccolte': '🐕',
-    'Segnaletica danneggiata': '🚧',     'Immobile pericolante': '🏚️',
-    'Barriere architettoniche': '♿',    'Inquinamento acustico': '🔊',
-    'Veicoli abbandonati': '🛺',         'Degrado e sicurezza': '💊',
-    'Altro': '📦'
-  };
-  const catEmoji = emojiMap[cat] || '📌';
+  const cat      = _selectedDest ? (_selectedDest.categoria || _selectedDest.nome) : 'Altro';
+  const catEmoji = _selectedDest ? _selectedDest.icon : '📌';
+  const urgenza  = document.getElementById('urgenza').value;
+  const addr     = document.getElementById('addressInput').value || reportData.address;
   const urgLabel = urgenza === 'Alta' ? '🔴 URGENTE — ' : urgenza === 'Bassa' ? '🟢 ' : '🟡 ';
 
   const siteUrl = CONFIG.siteUrl

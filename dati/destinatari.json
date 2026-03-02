@@ -8,52 +8,59 @@
     {
       "id": "strade",
       "nome": "Strade e Viabilità",
-      "descrizione": "Buche, dissesti stradali, marciapiedi, segnaletica",
+      "descrizione": "Buche, segnaletica, marciapiedi",
       "email": "lavori.pubblici@comune.[nome].it",
-      "icon": "🕳️"
+      "icon": "🕳️",
+      "categoria": "Buche e dissesti stradali"
     },
     {
       "id": "luce",
       "nome": "Illuminazione",
-      "descrizione": "Lampioni guasti, cabine elettriche, semafori",
+      "descrizione": "Lampioni guasti, semafori",
       "email": "illuminazione@comune.[nome].it",
-      "icon": "💡"
+      "icon": "💡",
+      "categoria": "Illuminazione pubblica guasta"
     },
     {
       "id": "rifiuti",
       "nome": "Rifiuti e Ambiente",
-      "descrizione": "Rifiuti abbandonati, degrado ambientale, inquinamento",
+      "descrizione": "Rifiuti abbandonati, degrado",
       "email": "ambiente@comune.[nome].it",
-      "icon": "🗑️"
+      "icon": "🗑️",
+      "categoria": "Rifiuti abbandonati"
     },
     {
       "id": "verde",
       "nome": "Verde Pubblico",
-      "descrizione": "Alberi pericolanti, parchi, aree verdi",
+      "descrizione": "Alberi, parchi, aree verdi",
       "email": "verde@comune.[nome].it",
-      "icon": "🌳"
+      "icon": "🌳",
+      "categoria": "Alberi e verde pubblico"
     },
     {
       "id": "acqua",
       "nome": "Acqua e Fognature",
-      "descrizione": "Perdite idriche, allagamenti, fognature",
+      "descrizione": "Perdite idriche, allagamenti",
       "email": "acqua@comune.[nome].it",
-      "icon": "🚰"
+      "icon": "🚰",
+      "categoria": "Perdite idriche"
     },
     {
       "id": "polizia",
       "nome": "Polizia Locale",
-      "descrizione": "Sicurezza, veicoli abbandonati, degrado urbano",
+      "descrizione": "Sicurezza, veicoli abbandonati",
       "email": "polizialocale@comune.[nome].it",
-      "icon": "🚔"
+      "icon": "🚔",
+      "categoria": "Degrado e sicurezza"
     },
     {
       "id": "altro",
       "nome": "Altro",
-      "descrizione": "Inserisci l'email del destinatario",
+      "descrizione": "Inserisci l'email destinatario",
       "email": null,
       "custom": true,
-      "icon": "✏️"
+      "icon": "✏️",
+      "categoria": "Altro"
     }
   ]
 }

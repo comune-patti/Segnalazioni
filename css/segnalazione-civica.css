@@ -452,14 +452,6 @@ textarea { resize: vertical; min-height: 90px; }
 .field-error.visible { display: block; }
 .field-error.ok { display: block; color: var(--sage); }
 
-.cat-hint {
-  display: block;
-  font-size: 0.76rem;
-  color: var(--amber);
-  margin-top: 0.3rem;
-  min-height: 1.1em;
-}
-
 /* ─────────────────────────────────────────────
    DESTINATARI GRID
 ───────────────────────────────────────────── */
