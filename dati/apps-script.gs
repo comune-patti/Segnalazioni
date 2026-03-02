@@ -265,17 +265,23 @@ function buildEmailPA(data, mittente, resolveUrl) {
 }
 
 function buildEmailSegnalante(data, mittente) {
-  const tdL = 'padding:8px 14px;background:#f9f6f0;color:#5a5044;font-size:0.82rem;white-space:nowrap;border-bottom:1px solid #ede8e0;width:110px;';
+  const tdL = 'padding:8px 14px;background:#f9f6f0;color:#5a5044;font-size:0.82rem;white-space:nowrap;vertical-align:top;border-bottom:1px solid #ede8e0;width:110px;';
   const tdV = 'padding:8px 14px;font-size:0.88rem;border-bottom:1px solid #ede8e0;color:#1a1208;';
 
   const rows = [
-    ['ID',        '<strong>' + (data.ID_Segnalazione || '—') + '</strong>'],
-    ['Categoria', data.Categoria || '—'],
-    ['Luogo',     data.Indirizzo_Completo || '—'],
-    ['Data/ora',  (data.Data || '') + ' ' + (data.Ora || '')],
+    ['ID',          '<strong>' + (data.ID_Segnalazione || '—') + '</strong>'],
+    ['Categoria',   data.Categoria || '—'],
+    ['Luogo',       data.Indirizzo_Completo || '—'],
+    ['Descrizione', data.Descrizione || '—'],
+    ['Inviata a',   data.Area_Destinataria || data.Destinatari || '—'],
+    ['Data/ora',    (data.Data || '') + ' ' + (data.Ora || '')],
   ].map(function(r) {
     return '<tr><td style="' + tdL + '">' + r[0] + '</td><td style="' + tdV + '">' + r[1] + '</td></tr>';
   }).join('');
+
+  const photoHtml = data.URL_Immagine
+    ? '<div style="margin:16px 0 0;"><img src="' + data.URL_Immagine + '" alt="Foto segnalazione" style="max-width:100%;border-radius:8px;border:1px solid #e8e0d4;"></div>'
+    : '';
 
   return '<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f0e8;font-family:\'Segoe UI\',Arial,sans-serif;">'
     + '<div style="max-width:560px;margin:24px auto;">'
@@ -287,7 +293,8 @@ function buildEmailSegnalante(data, mittente) {
     + '<p style="margin:0 0 16px;font-size:0.95rem;">Ciao <strong>' + (data.Nome_Segnalante || 'Cittadino') + '</strong>,</p>'
     + '<p style="margin:0 0 16px;color:#555;font-size:0.88rem;">La tua segnalazione è stata registrata con successo.</p>'
     + '<table style="width:100%;border-collapse:collapse;border:1px solid #ede8e0;margin-bottom:20px;">' + rows + '</table>'
-    + '<p style="margin:0;font-size:0.83rem;color:#555;">Conserva il tuo <strong>ID segnalazione</strong> per seguire l\'evoluzione della pratica.</p>'
+    + photoHtml
+    + '<p style="margin:16px 0 0;font-size:0.83rem;color:#555;">Conserva il tuo <strong>ID segnalazione</strong> per seguire l\'evoluzione della pratica.</p>'
     + '<p style="margin:20px 0 0;font-size:0.73rem;color:#aaa;">— ' + mittente + '</p>'
     + '</div></div></body></html>';
 }
