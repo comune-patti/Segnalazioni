@@ -531,19 +531,40 @@ async function sendReport() {
       `#SegnalaOra #${cat.replace(/[^a-zA-Z0-9]/g, '')}`,
       siteBase + 'mappa.html',
     ].filter(Boolean).join('\n');
-    const mapUrl = encodeURIComponent(siteBase + 'mappa.html');
-    const txt    = encodeURIComponent(socialMsg);
-    const urls = {
-      twitter:  `https://twitter.com/intent/tweet?text=${txt}`,
-      whatsapp: `https://wa.me/?text=${txt}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${mapUrl}&quote=${txt}`,
-      telegram: `https://t.me/share/url?url=${mapUrl}&text=${txt}`,
-      bluesky:  `https://bsky.app/intent/compose?text=${txt}`,
-    };
     const names = { twitter: 'X/Twitter', whatsapp: 'WhatsApp', facebook: 'Facebook', telegram: 'Telegram', bluesky: 'Bluesky' };
-    for (const p of _socialPlatforms) {
-      window.open(urls[p], '_blank');
-      channelsBadges.push('📱 ' + names[p]);
+
+    // Converte la prima foto base64 → File (sincrono, no await)
+    const shareFile = reportData.photos.length > 0
+      ? base64ToFile(reportData.photos[0].base64, 'segnalazione.jpg') : null;
+    const useShareAPI = shareFile && typeof navigator.share === 'function';
+
+    if (!useShareAPI) {
+      // Desktop / browser senza Web Share API → URL intents sincroni (nessun await, popup non bloccati)
+      const mapUrl = encodeURIComponent(siteBase + 'mappa.html');
+      const txt    = encodeURIComponent(socialMsg);
+      const urls = {
+        twitter:  `https://twitter.com/intent/tweet?text=${txt}`,
+        whatsapp: `https://wa.me/?text=${txt}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${mapUrl}&quote=${txt}`,
+        telegram: `https://t.me/share/url?url=${mapUrl}&text=${txt}`,
+        bluesky:  `https://bsky.app/intent/compose?text=${txt}`,
+      };
+      for (const p of _socialPlatforms) {
+        window.open(urls[p], '_blank');
+        channelsBadges.push('📱 ' + names[p]);
+      }
+    } else {
+      // Mobile / Web Share API → share nativo con foto allegata
+      // È il primo await → il contesto del gesto utente è ancora valido
+      try {
+        const canWithFiles = navigator.canShare && navigator.canShare({ files: [shareFile] });
+        await navigator.share({
+          title: `SegnalaOra — ${cat}`,
+          text: socialMsg,
+          ...(canWithFiles ? { files: [shareFile] } : {}),
+        });
+        _socialPlatforms.forEach(p => channelsBadges.push('📱 ' + names[p]));
+      } catch(e) { /* utente ha annullato — nessuna azione */ }
     }
   }
 
@@ -662,6 +683,17 @@ function copyToken() {
 // ─────────────────────────────────────────────
 //  SOCIAL SHARING
 // ─────────────────────────────────────────────
+
+// Converte un Data URL base64 in oggetto File (per Web Share API)
+function base64ToFile(dataUrl, filename) {
+  const arr  = dataUrl.split(',');
+  const mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+  const bstr = atob(arr[1]);
+  const u8   = new Uint8Array(bstr.length);
+  for (let i = 0; i < bstr.length; i++) u8[i] = bstr.charCodeAt(i);
+  return new File([u8], filename, { type: mime });
+}
+
 function toggleSocial(platform) {
   _socialPlatforms.has(platform)
     ? _socialPlatforms.delete(platform)
