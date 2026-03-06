@@ -129,14 +129,10 @@ async function syncFromEmail(email, showFeedback) {
       fetch(SHEETS_CSV_RISOLTE + '&t=' + Date.now()).then(r => r.text()).catch(() => ''),
     ]);
     const allRows = [...parseCSV(t1), ...parseCSV(t2)];
-    console.log('[Profilo] CSV header keys:', allRows.length > 0 ? Object.keys(allRows[0]) : '(nessuna riga)');
-    console.log('[Profilo] Totale righe parsed:', allRows.length, '| Cerca email:', email);
-    if (allRows.length > 0) console.log('[Profilo] Prima riga Email_Segnalante:', JSON.stringify(allRows[0].Email_Segnalante));
     const rows = allRows.filter(r => (r.Email_Segnalante || '').trim().toLowerCase() === email.toLowerCase());
-    console.log('[Profilo] Righe trovate per questa email:', rows.length);
 
     const converted = rows.map(r => ({
-      ticketId:  r.ID_Segnalazione,
+      ticketId:  r.ID_Segnalazione || r.Timestamp_UTC || (r.Data + 'T' + r.Ora + '_' + r.Categoria),
       categoria: r.Categoria,
       catEmoji:  r.Categoria_Emoji,
       indirizzo: r.Via || r.Indirizzo_Completo,
