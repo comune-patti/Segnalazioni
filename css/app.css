@@ -65,16 +65,18 @@
   font-size: 0.95rem;
   transition: border-color 0.2s, color 0.2s;
   flex-shrink: 0;
+   display: none;
 }
 .btn-info:hover { border-color: var(--amber); color: var(--amber); }
+
 
 /* Btn Theme — 32px circolare (profilo usa override 34px/8px) */
 .btn-theme {
   background: none;
-  border: 1px solid rgba(60,40,20,0.20);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+   width: 34px;
+    height: 34px;
+    border: 1.5px solid rgba(61, 47, 30, 0.18);
+    border-radius: 8px;
   color: #9a8f80;
   cursor: pointer;
   display: flex;
@@ -286,6 +288,7 @@ body.page-form .header-actions {
 }
 
 body.page-form .btn-map-link {
+	display: none;
   background: rgba(26,18,8,0.06);
   color: var(--ink);
   border: 1px solid rgba(26,18,8,0.14);
