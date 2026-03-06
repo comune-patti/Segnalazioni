@@ -68,19 +68,19 @@ let _allReports = [];
 
 // Lista completa delle categorie (uguale al form di segnalazione)
 const ALL_CATEGORIES = [
-  { cat: 'Buche e dissesti stradali',     emoji: '🕳️' },
-  { cat: 'Illuminazione pubblica guasta', emoji: '💡'  },
-  { cat: 'Rifiuti abbandonati',           emoji: '🗑️' },
-  { cat: 'Alberi e verde pubblico',       emoji: '🌳'  },
-  { cat: 'Perdite idriche',               emoji: '🚰'  },
-  { cat: 'Deiezioni non raccolte',        emoji: '🐕'  },
-  { cat: 'Segnaletica danneggiata',       emoji: '🚧'  },
-  { cat: 'Immobile pericolante',          emoji: '🏚️' },
-  { cat: 'Barriere architettoniche',      emoji: '♿'  },
-  { cat: 'Inquinamento acustico',         emoji: '🔊'  },
-  { cat: 'Veicoli abbandonati',           emoji: '🛺'  },
-  { cat: 'Degrado e sicurezza',           emoji: '💊'  },
-  { cat: 'Altro',                         emoji: '📦'  },
+  { cat: 'Buche e dissesti stradali',     icon: 'fa-solid fa-road'               },
+  { cat: 'Illuminazione pubblica guasta', icon: 'fa-solid fa-lightbulb'          },
+  { cat: 'Rifiuti abbandonati',           icon: 'fa-solid fa-trash'              },
+  { cat: 'Alberi e verde pubblico',       icon: 'fa-solid fa-tree'               },
+  { cat: 'Perdite idriche',               icon: 'fa-solid fa-droplet'            },
+  { cat: 'Deiezioni non raccolte',        icon: 'fa-solid fa-paw'                },
+  { cat: 'Segnaletica danneggiata',       icon: 'fa-solid fa-triangle-exclamation'},
+  { cat: 'Immobile pericolante',          icon: 'fa-solid fa-house-crack'        },
+  { cat: 'Barriere architettoniche',      icon: 'fa-solid fa-wheelchair'         },
+  { cat: 'Inquinamento acustico',         icon: 'fa-solid fa-volume-high'        },
+  { cat: 'Veicoli abbandonati',           icon: 'fa-solid fa-car'                },
+  { cat: 'Degrado e sicurezza',           icon: 'fa-solid fa-shield-halved'      },
+  { cat: 'Altro',                         icon: 'fa-solid fa-ellipsis'           },
 ];
 
 // ─────────────────────────────────────────────
@@ -158,32 +158,52 @@ function populateCategoryFilter(reports) {
   const counts = {};
   reports.forEach(r => { if (r.Categoria) counts[r.Categoria] = (counts[r.Categoria] || 0) + 1; });
 
-  const sel = document.getElementById('catFilter');
-  sel.innerHTML = '<option value="">— Tutte le categorie —</option>';
+  const container = document.getElementById('catChips');
+  container.innerHTML = '';
 
-  ALL_CATEGORIES.forEach(({ cat, emoji }) => {
-    const n   = counts[cat] || 0;
-    const opt = document.createElement('option');
-    opt.value       = cat;
-    opt.textContent = emoji + '  ' + cat + (n > 0 ? '  (' + n + ')' : '');
-    sel.appendChild(opt);
+  // Chip "Tutte"
+  const allChip = document.createElement('button');
+  allChip.type = 'button';
+  allChip.className = 'cat-chip active';
+  allChip.dataset.cat = '';
+  allChip.innerHTML = '<i class="fa-solid fa-layer-group"></i><span>Tutte</span>';
+  allChip.addEventListener('click', () => filterByCategory(''));
+  container.appendChild(allChip);
+
+  // Chip per categoria definita
+  ALL_CATEGORIES.forEach(({ cat, icon }) => {
+    const n = counts[cat] || 0;
+    if (!n) return;
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'cat-chip';
+    chip.dataset.cat = cat;
+    chip.innerHTML = `<i class="${icon}"></i><span>${cat}${n > 0 ? ' <em>(${n})</em>' : ''}</span>`;
+    chip.innerHTML = `<i class="${icon}"></i><span>${cat} <em>(${n})</em></span>`;
+    chip.addEventListener('click', () => filterByCategory(cat));
+    container.appendChild(chip);
   });
 
-  // Categorie extra presenti nei dati ma non nella lista predefinita
+  // Categorie extra (non nella lista predefinita)
   Object.keys(counts)
     .filter(cat => !ALL_CATEGORIES.find(c => c.cat === cat))
     .forEach(cat => {
-      const opt = document.createElement('option');
-      opt.value       = cat;
-      opt.textContent = '📌  ' + cat + '  (' + counts[cat] + ')';
-      sel.appendChild(opt);
+      const n = counts[cat];
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'cat-chip';
+      chip.dataset.cat = cat;
+      chip.innerHTML = `<i class="fa-solid fa-tag"></i><span>${cat} <em>(${n})</em></span>`;
+      chip.addEventListener('click', () => filterByCategory(cat));
+      container.appendChild(chip);
     });
 }
 
 function filterByCategory(cat) {
-  // Aggiorna select se chiamata dal pulsante reset
-  const sel = document.getElementById('catFilter');
-  if (sel.value !== cat) sel.value = cat;
+  // Aggiorna stato attivo delle chips
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.cat === cat);
+  });
 
   // Feedback visivo filter bar
   document.getElementById('filterBar').classList.toggle('active', !!cat);
@@ -222,7 +242,7 @@ function renderCategorieChart(reports) {
   });
 
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const labels = sorted.map(([cat]) => (emojis[cat] ? emojis[cat] + '  ' : '') + cat);
+  const labels = sorted.map(([cat]) => cat);
   const data   = sorted.map(([, n]) => n);
 
   // Palette amber→teal in base alla posizione
@@ -284,7 +304,7 @@ function renderUrgenzaChart(reports) {
   new Chart(document.getElementById('chartUrgenza'), {
     type: 'doughnut',
     data: {
-      labels: ['🔴 Alta', '🟠 Normale', '🔵 Bassa'],
+      labels: ['Alta', 'Normale', 'Bassa'],
       datasets: [{
         data: [counts.Alta, counts.Normale, counts.Bassa],
         backgroundColor: ['#e53535', '#ff9900', '#3cb4d8'],

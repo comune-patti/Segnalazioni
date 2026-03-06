@@ -95,14 +95,7 @@
   <!-- FILTRO CATEGORIA -->
   <div class="filter-bar" id="filterBar">
     <span class="filter-bar-label"><i class="fa-solid fa-filter"></i> Filtra per categoria:</span>
-    <div class="select-wrap-stats">
-      <select id="catFilter" onchange="filterByCategory(this.value)">
-        <option value="">— Tutte le categorie —</option>
-      </select>
-    </div>
-    <button class="filter-reset" id="filterReset" onclick="filterByCategory('')" title="Rimuovi filtro">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
+    <div class="cat-chips" id="catChips"></div>
   </div>
 
   <!-- CHARTS GRID -->

@@ -340,7 +340,14 @@ function renderMarkers() {
 
     const m = L.marker([lat, lng], { icon: makeMarkerIcon(report.Urgenza, report.Stato) });
     m.bindPopup(makePopupHTML(report), { maxWidth: 300 });
-    m.on('click', () => highlightListItem(report.ID_Segnalazione));
+    m.on('click', () => {
+      if (window.innerWidth <= 768) {
+        m.closePopup();
+        expandReportItem(report.ID_Segnalazione);
+      } else {
+        highlightListItem(report.ID_Segnalazione);
+      }
+    });
     m.addTo(map);
     markers.push(m);
     markerById[report.ID_Segnalazione] = m;
@@ -415,6 +422,14 @@ function renderList() {
     const el = document.createElement('div');
     el.className = 'report-item';
     el.id = 'ri-' + r.ID_Segnalazione;
+    const urgColor  = URGENCY_COLORS[r.Urgenza] || '#d4820a';
+    const urgLabel  = r.Urgenza === 'Alta' ? '🔴 Urgente' : r.Urgenza === 'Bassa' ? '🔵 Bassa' : '🟠 Normale';
+    const imgUrls   = (r.URL_Immagini || r.URL_Immagine || '').split(',').map(u => u.trim()).filter(Boolean);
+    const imgsHtml  = imgUrls.length > 0
+      ? `<div class="rid-imgs">${imgUrls.map(u =>
+          `<img src="${u}" loading="lazy" onerror="this.style.display='none'" onclick="openLightbox('${u}')">`
+        ).join('')}</div>`
+      : '';
     el.innerHTML = `
       <div class="ri-top">
         <span class="ri-emoji">${catIcon(r.Categoria_Emoji)}</span>
@@ -425,8 +440,24 @@ function renderList() {
       <div class="ri-meta">
         <span class="ri-date">${r.Data || ''}</span>
         ${makeStatoBadge(r.Stato)}
+      </div>
+      <div class="ri-detail" id="rid-${r.ID_Segnalazione}">
+        ${r.Descrizione ? `<div class="rid-descr">${r.Descrizione}</div>` : ''}
+        <div class="rid-row"><i class="fa-solid fa-clock"></i> ${r.Data || ''} ${r.Ora || ''}</div>
+        ${r.Nome_Segnalante ? `<div class="rid-row"><i class="fa-solid fa-user"></i> ${r.Nome_Segnalante}</div>` : ''}
+        <div class="rid-row" style="color:${urgColor}"><i class="fa-solid fa-circle-exclamation"></i> ${urgLabel}</div>
+        ${imgsHtml}
+        <div class="rid-id">${r.ID_Segnalazione}</div>
       </div>`;
-    el.addEventListener('click', () => focusReport(r.ID_Segnalazione));
+    el.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        expandReportItem(r.ID_Segnalazione);
+        const m = markerById[r.ID_Segnalazione];
+        if (m) map.setView([parseFloat(r.Lat), parseFloat(r.Long)], 17, { animate: true });
+      } else {
+        focusReport(r.ID_Segnalazione);
+      }
+    });
     list.appendChild(el);
   });
 
@@ -466,9 +497,42 @@ function focusReport(id) {
   const m = markerById[id];
   map.setView([lat, lng], 17, { animate: true });
 
-  if (m) {
+  if (m && window.innerWidth > 768) {
     clearTimeout(_focusTimer);
     _focusTimer = setTimeout(() => m.openPopup(), 350);
+  }
+}
+
+function expandReportItem(id) {
+  // Naviga alla pagina corretta nella sidebar
+  const idx = filteredReports.findIndex(r => r.ID_Segnalazione === id);
+  if (idx !== -1) {
+    const page = Math.floor(idx / PAGE_SIZE) + 1;
+    if (page !== currentPage) { currentPage = page; renderList(); }
+  }
+
+  // Chiudi tutti i dettagli aperti e deseleziona
+  document.querySelectorAll('.report-item').forEach(el => {
+    el.classList.remove('highlighted');
+    const det = el.querySelector('.ri-detail');
+    if (det) det.classList.remove('open');
+  });
+
+  // Apri il dettaglio dell'item selezionato
+  const el = document.getElementById('ri-' + id);
+  if (el) {
+    el.classList.add('highlighted');
+    const det = el.querySelector('.ri-detail');
+    if (det) det.classList.add('open');
+
+    // Scrolla la sidebar in vista, poi scrolla sull'item
+    const panel = document.querySelector('.side-panel');
+    if (panel) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 250);
+    } else {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 }
 
