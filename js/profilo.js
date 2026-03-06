@@ -358,7 +358,7 @@ function parseCSV(text) {
     headers.forEach((h, idx) => {
       obj[h.trim().replace(/^\uFEFF/, '')] = (vals[idx] !== undefined ? vals[idx] : '').trim();
     });
-    if (obj.Lat && !isNaN(parseFloat(obj.Lat))) result.push(obj);
+    if (obj.ID_Segnalazione) result.push(obj);
   }
   return result;
 }
