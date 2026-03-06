@@ -6,18 +6,33 @@
 const SHEETS_CSV_APERTE  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzGnyHVzcSbnLKsp1gkFi5a8xJeeFTK8YhmA67XJUEGaJIQ5sMNwqG4Jdhxg9DqaAWU2bdWGHGfnpR/pub?gid=144049557&single=true&output=csv';
 const SHEETS_CSV_RISOLTE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzGnyHVzcSbnLKsp1gkFi5a8xJeeFTK8YhmA67XJUEGaJIQ5sMNwqG4Jdhxg9DqaAWU2bdWGHGfnpR/pub?gid=707341479&single=true&output=csv';
 const APPS_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwiLYj4k102Vamc5PuqYp6euSVnYJh61RtkgTGvXufbLV3R_r-j2MRCdlavPu2nCFvpmw/exec';
-const LS_KEY = 'segnalaora_profilo';
+const LS_KEY       = 'segnalaora_profilo';
+const LS_EMAIL_KEY = 'segnalaora_email';
 
 // ─────────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────────
 async function init() {
-  const reports = loadLocal();
+  const reports    = loadLocal();
+  const savedEmail = localStorage.getItem(LS_EMAIL_KEY) || '';
+
+  // Pre-popola il campo email se salvato
+  if (savedEmail) {
+    const emailInput = document.getElementById('searchEmail');
+    if (emailInput) emailInput.value = savedEmail;
+  }
+
   if (reports.length > 0) {
-    renderList(reports);                  // mostra subito i dati locali
+    renderList(reports);
     updateSummary(reports);
     document.getElementById('clearSection').style.display = 'block';
-    await refreshStatuses(reports);       // poi aggiorna stati dal CSV
+    await refreshStatuses(reports);
+    // Sincronizza nuove segnalazioni in background tramite email salvata
+    if (savedEmail) syncFromEmail(savedEmail, false);
+  } else if (savedEmail) {
+    // Nessun dato locale ma email salvata: sincronizza subito mostrando il feedback
+    document.getElementById('emailSearchForm').style.display = 'block';
+    await syncFromEmail(savedEmail, true);
   } else {
     document.getElementById('profileList').innerHTML = `
       <div class="no-reports">
@@ -69,6 +84,92 @@ async function refreshStatuses(reports) {
       updateSummary(reports);
     }
   } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+//  MERGE + SYNC DA EMAIL
+// ─────────────────────────────────────────────
+
+// Unisce newReports nel localStorage: aggiorna stato/token, aggiunge nuovi
+function mergeIntoLocal(newReports) {
+  const existing = loadLocal();
+  const byId = {};
+  existing.forEach(r => { byId[r.ticketId] = r; });
+
+  let changed = false;
+  newReports.forEach(nr => {
+    if (byId[nr.ticketId]) {
+      const local = byId[nr.ticketId];
+      if (nr.stato && nr.stato !== local.stato) { local.stato = nr.stato; changed = true; }
+      if (nr.token && !local.token) { local.token = nr.token; changed = true; }
+    } else {
+      existing.push(nr);
+      byId[nr.ticketId] = nr;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    existing.sort((a, b) => (b.ticketId || '').localeCompare(a.ticketId || ''));
+    saveLocal(existing);
+  }
+  return existing;
+}
+
+// Recupera segnalazioni per email dai CSV pubblici, le merge e aggiorna la UI
+async function syncFromEmail(email, showFeedback) {
+  if (showFeedback) {
+    const btn = document.getElementById('searchBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ricerca…'; }
+  }
+
+  try {
+    const [t1, t2] = await Promise.all([
+      fetch(SHEETS_CSV_APERTE  + '&t=' + Date.now()).then(r => r.text()).catch(() => ''),
+      fetch(SHEETS_CSV_RISOLTE + '&t=' + Date.now()).then(r => r.text()).catch(() => ''),
+    ]);
+    const rows = [...parseCSV(t1), ...parseCSV(t2)]
+      .filter(r => (r.Email_Segnalante || '').trim().toLowerCase() === email.toLowerCase());
+
+    const converted = rows.map(r => ({
+      ticketId:  r.ID_Segnalazione,
+      categoria: r.Categoria,
+      catEmoji:  r.Categoria_Emoji,
+      indirizzo: r.Via || r.Indirizzo_Completo,
+      data: r.Data, ora: r.Ora,
+      urgenza: r.Urgenza,
+      stato:   r.Stato,
+      nome:    r.Nome_Segnalante,
+      token:   r.Token_Risoluzione || '',
+    }));
+
+    const merged = mergeIntoLocal(converted);
+
+    if (showFeedback) {
+      if (!rows.length) {
+        renderList([], `<i class="fa-solid fa-magnifying-glass"></i> Nessuna segnalazione trovata per <strong>${email}</strong>`);
+      } else {
+        renderList(merged,
+          `<i class="fa-solid fa-magnifying-glass"></i> ${rows.length} segnalazion${rows.length === 1 ? 'e' : 'i'} trovate per <strong>${email}</strong>`);
+        updateSummary(merged);
+        document.getElementById('clearSection').style.display = 'block';
+      }
+    } else if (merged.length > 0) {
+      renderList(merged);
+      updateSummary(merged);
+      document.getElementById('clearSection').style.display = 'block';
+    }
+  } catch(e) {
+    if (showFeedback) {
+      document.getElementById('profileList').innerHTML =
+        '<div class="no-reports">Errore di rete. Controlla la connessione e riprova.</div>';
+    }
+  } finally {
+    if (showFeedback) {
+      const btn = document.getElementById('searchBtn');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Cerca'; }
+    }
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -225,42 +326,8 @@ async function searchByEmail() {
     document.getElementById('searchEmail').focus();
     return;
   }
-
-  const btn = document.getElementById('searchBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ricerca…';
-
-  try {
-    const [t1, t2] = await Promise.all([
-      fetch(SHEETS_CSV_APERTE  + '&t=' + Date.now()).then(r => r.text()).catch(() => ''),
-      fetch(SHEETS_CSV_RISOLTE + '&t=' + Date.now()).then(r => r.text()).catch(() => ''),
-    ]);
-    const rows = [...parseCSV(t1), ...parseCSV(t2)]
-      .filter(r => (r.Email_Segnalante || '').trim().toLowerCase() === email);
-
-    if (!rows.length) {
-      renderList([], `<i class="fa-solid fa-magnifying-glass"></i> Nessuna segnalazione trovata per <strong>${email}</strong>`);
-    } else {
-      const converted = rows.map(r => ({
-        ticketId:  r.ID_Segnalazione,
-        categoria: r.Categoria,
-        catEmoji:  r.Categoria_Emoji,
-        indirizzo: r.Via || r.Indirizzo_Completo,
-        data: r.Data, ora: r.Ora,
-        urgenza: r.Urgenza,
-        stato:   r.Stato,
-        nome:    r.Nome_Segnalante,
-      }));
-      renderList(converted,
-        `<i class="fa-solid fa-magnifying-glass"></i> ${rows.length} segnalazion${rows.length === 1 ? 'e' : 'i'} trovate per <strong>${email}</strong>`);
-    }
-  } catch(e) {
-    document.getElementById('profileList').innerHTML =
-      '<div class="no-reports">Errore di rete. Controlla la connessione e riprova.</div>';
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Cerca';
-  }
+  localStorage.setItem(LS_EMAIL_KEY, email);
+  await syncFromEmail(email, true);
 }
 
 // ─────────────────────────────────────────────
@@ -269,6 +336,7 @@ async function searchByEmail() {
 function confirmClear() {
   if (confirm('Cancellare la cronologia salvata su questo dispositivo?\nQuesta operazione non può essere annullata.')) {
     localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_EMAIL_KEY);
     location.reload();
   }
 }
