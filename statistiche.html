@@ -133,15 +133,18 @@
   <!-- SEZIONE TABELLA -->
   <div id="tableSection" class="table-section" style="display:none">
     <div class="table-toolbar">
-      <div class="col-selector-wrap">
-        <button class="btn-col-toggle" onclick="toggleColPanel()">
-          <i class="fa-solid fa-sliders"></i> Colonne <i class="fa-solid fa-chevron-down" id="colPanelChevron"></i>
-        </button>
+      <div class="col-dropdown" id="colDropdown">
+        <div class="col-dropdown-trigger" onclick="toggleColPanel()">
+          <span class="col-dd-badge" id="colDdBadge">0</span>
+          <span class="col-dd-label">Colonne selezionate</span>
+          <span class="col-dd-clear" onclick="clearAllCols(event)" title="Deseleziona tutte"><i class="fa-solid fa-xmark"></i></span>
+          <span class="col-dd-sep">|</span>
+          <i class="col-dd-chevron fa-solid fa-chevron-down" id="colPanelChevron"></i>
+        </div>
         <div class="col-panel" id="colPanel" style="display:none">
-          <div class="col-panel-header">
-            <label class="col-check-all">
-              <input type="checkbox" id="colCheckAll" onchange="toggleAllCols(this.checked)"> Seleziona tutte
-            </label>
+          <div class="col-panel-option col-panel-opt-all" id="colOptAll" onclick="toggleAllColsClick()">
+            <span class="col-chk" id="colChkAll"></span>
+            <span class="col-opt-label col-opt-all-label">Seleziona tutte</span>
           </div>
           <div class="col-checks" id="colChecks"></div>
         </div>

@@ -582,33 +582,55 @@ function buildColPanel() {
   const container = document.getElementById('colChecks');
   container.innerHTML = '';
   _allCols.forEach(col => {
-    const label = document.createElement('label');
-    label.className = 'col-check-item';
-    const checked = _visibleCols.has(col) ? 'checked' : '';
-    label.innerHTML = `<input type="checkbox" value="${col}" ${checked}> ${col}`;
-    label.querySelector('input').addEventListener('change', e => {
-      if (e.target.checked) _visibleCols.add(col);
-      else _visibleCols.delete(col);
+    const div = document.createElement('div');
+    div.className = 'col-panel-option';
+    div.dataset.col = col;
+    const sel = _visibleCols.has(col);
+    div.innerHTML = `<span class="col-chk${sel ? ' checked' : ''}"></span><span class="col-opt-label${sel ? ' selected' : ''}">${col}</span>`;
+    div.addEventListener('click', () => {
+      const active = _visibleCols.has(col);
+      if (active) _visibleCols.delete(col); else _visibleCols.add(col);
+      div.querySelector('.col-chk').className        = 'col-chk' + (_visibleCols.has(col) ? ' checked' : '');
+      div.querySelector('.col-opt-label').className  = 'col-opt-label' + (_visibleCols.has(col) ? ' selected' : '');
       syncColAllCheckbox();
       renderDataTable();
     });
-    container.appendChild(label);
+    container.appendChild(div);
   });
   syncColAllCheckbox();
 }
 
 function syncColAllCheckbox() {
-  const allCb = document.getElementById('colCheckAll');
-  if (!allCb) return;
-  allCb.checked       = _visibleCols.size === _allCols.length;
-  allCb.indeterminate = _visibleCols.size > 0 && _visibleCols.size < _allCols.length;
+  const badge  = document.getElementById('colDdBadge');
+  if (badge) badge.textContent = _visibleCols.size;
+  const chk = document.getElementById('colChkAll');
+  if (!chk) return;
+  const all  = _visibleCols.size === _allCols.length;
+  const none = _visibleCols.size === 0;
+  chk.className = 'col-chk' + (all ? ' checked' : none ? '' : ' indeterminate');
+  const lbl = document.querySelector('#colOptAll .col-opt-label');
+  if (lbl) lbl.className = 'col-opt-label col-opt-all-label' + (all ? ' selected' : '');
+}
+
+function toggleAllColsClick() {
+  toggleAllCols(_visibleCols.size < _allCols.length);
 }
 
 function toggleAllCols(checked) {
   if (checked) _allCols.forEach(c => _visibleCols.add(c));
   else _visibleCols.clear();
-  document.querySelectorAll('#colChecks input[type=checkbox]').forEach(cb => { cb.checked = checked; });
+  document.querySelectorAll('#colChecks .col-panel-option').forEach(div => {
+    const col = div.dataset.col;
+    div.querySelector('.col-chk').className       = 'col-chk' + (checked ? ' checked' : '');
+    div.querySelector('.col-opt-label').className = 'col-opt-label' + (checked ? ' selected' : '');
+  });
+  syncColAllCheckbox();
   renderDataTable();
+}
+
+function clearAllCols(e) {
+  e.stopPropagation();
+  toggleAllCols(false);
 }
 
 function toggleColPanel() {
@@ -616,8 +638,16 @@ function toggleColPanel() {
   const chevron = document.getElementById('colPanelChevron');
   const open    = panel.style.display === 'block';
   panel.style.display = open ? 'none' : 'block';
-  chevron.className   = open ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+  chevron.className   = 'col-dd-chevron fa-solid ' + (open ? 'fa-chevron-down' : 'fa-chevron-up');
 }
+
+document.addEventListener('click', e => {
+  const dd = document.getElementById('colDropdown');
+  if (dd && !dd.contains(e.target)) {
+    document.getElementById('colPanel').style.display = 'none';
+    document.getElementById('colPanelChevron').className = 'col-dd-chevron fa-solid fa-chevron-down';
+  }
+});
 
 function renderDataTable() {
   const cols  = _allCols.filter(c => _visibleCols.has(c));
