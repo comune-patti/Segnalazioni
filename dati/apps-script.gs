@@ -24,7 +24,7 @@ const COLUMNS = [
   'ID_Segnalazione','Timestamp_UTC','Data','Ora','Categoria','Categoria_Emoji',
   'Urgenza','Descrizione','Nome_Segnalante','Email_Segnalante','Lat','Long',
   'Indirizzo_Completo','Via','Numero_Civico','CAP','Comune','Provincia','Regione',
-  'Fonte_Posizione','Accuratezza_GPS_m','Destinatari','Canale_Email',
+  'Fonte_Posizione','Accuratezza_GPS_m','Destinatari','Canale_Email','CC_Destinatari',
   'Canale_WhatsApp','Canale_Twitter','Canale_Facebook','Ha_Immagine',
   'Num_Foto','Dimensioni_Immagine','Testo_Messaggio','URL_Segnalazione',
   'URL_Immagine','URL_Immagini',
@@ -119,6 +119,7 @@ function doPost(e) {
           noReply:  true,
           replyTo:  data.Email_Segnalante || '',
         };
+        if (data.CC_Destinatari) optsPA.cc = data.CC_Destinatari;
         if (photoBlobs.length > 0) optsPA.attachments = photoBlobs;
         MailApp.sendEmail(optsPA);
       } catch(mailErr) {}
