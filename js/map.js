@@ -115,11 +115,11 @@ function initMap() {
   // Credits / logo — Leaflet-Control-Credits (L.controlCredits)
   L.controlCredits({
     position:      'bottomright',
-    imageurl:      'img/favicon.png',
+    imageurl:      'img/opendatasicilia.png',
     imagealt:      'SegnalaOra — OpenDataSicilia',
     tooltip:       'SegnalaOra — OpenDataSicilia',
-    width:         '58px',
-    height:        '50px',
+    width:         '50px',
+    height:        '58px',
     expandcontent: 'Web app civica<br/>by <a href="https://opendatasicilia.it" target="_blank" rel="noopener">@opendatasicilia</a>',
   }).addTo(map);
 }
