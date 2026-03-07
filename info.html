@@ -87,6 +87,36 @@
   </section>
 
   <section class="info-section">
+    <h2><i class="fa-solid fa-database"></i> Open Data &amp; Download</h2>
+    <p>Tutte le segnalazioni sono pubbliche e scaricabili liberamente in formato <strong>CSV</strong>, aggiornate automaticamente ogni 30 minuti tramite GitHub Actions.</p>
+    <p>I dati sono suddivisi in due archivi distinti:</p>
+    <ul class="info-list">
+      <li><i class="fa-solid fa-folder-open" style="color:var(--amber)"></i> <strong>Segnalazioni aperte</strong> — tutte le segnalazioni con stato <em>Nuova</em> o <em>In lavorazione</em></li>
+      <li><i class="fa-solid fa-folder-open" style="color:var(--sage)"></i> <strong>Segnalazioni risolte</strong> — segnalazioni con stato <em>Risolta</em> o <em>Chiusa</em></li>
+    </ul>
+    <h3><i class="fa-solid fa-table-list"></i> Scarica via interfaccia</h3>
+    <ol>
+      <li>Vai alla pagina <a href="statistiche.html"><strong>Statistiche</strong></a></li>
+      <li>Clicca <strong>Tabella dati</strong> per aprire la tabella combinata (entrambi gli archivi)</li>
+      <li>Usa il menu <strong>Colonne selezionate</strong> per scegliere quali colonne includere</li>
+      <li>Clicca <strong>Esporta CSV</strong> — il file viene scaricato immediatamente nel tuo dispositivo</li>
+    </ol>
+    <p class="info-note">Il CSV esportato include solo le colonne visibili e rispetta la selezione corrente. Il campo <em>Foglio</em> indica la provenienza di ogni riga (Segnalazioni / Risolte).</p>
+    <h3><i class="fa-solid fa-file-csv"></i> File CSV diretti</h3>
+    <p>Puoi accedere direttamente ai file CSV grezzi pubblicati su GitHub:</p>
+    <div class="info-links" style="margin-top:0.75rem">
+      <a href="dati/segnalazioni.csv" class="info-link-card" download>
+        <i class="fa-solid fa-file-arrow-down" style="color:var(--amber)"></i>
+        <span>segnalazioni.csv</span>
+      </a>
+      <a href="dati/risolte.csv" class="info-link-card" download>
+        <i class="fa-solid fa-file-arrow-down" style="color:var(--sage)"></i>
+        <span>risolte.csv</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="info-section">
     <h2><i class="fa-solid fa-layer-group"></i> Tecnologie utilizzate</h2>
     <div class="info-links">
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" class="info-link-card">
