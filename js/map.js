@@ -46,7 +46,7 @@ function initMap() {
   });
 
   const satelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    attribution: '© <a href="https://maps.google.com" target="_blank">Google Maps</a>',
+    attribution: '© <a href="https://maps.google.com" target="_blank">Google Maps</a> By <a href="https://opendatasicilia.it/" title="@opendatasicilia" target="_blank">@opendatasicilia</a>',
     maxZoom: 19
   });
 
