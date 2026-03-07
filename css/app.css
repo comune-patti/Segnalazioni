@@ -2108,7 +2108,7 @@ body.page-stats .col-dd-sep { color: rgba(60,40,20,0.18); font-size: 0.9rem; fle
 body.page-stats .col-dd-chevron { color: #9a8f80; font-size: 0.72rem; flex-shrink: 0; }
 body.page-stats .col-panel {
   position: absolute;
-  top: calc(100% + 4px);
+  bottom: calc(100% + 4px);
   left: 0;
   min-width: 260px;
   max-height: 320px;
@@ -2116,7 +2116,7 @@ body.page-stats .col-panel {
   background: var(--paper);
   border: 1.5px solid rgba(60,40,20,0.12);
   border-radius: 10px;
-  box-shadow: 0 6px 24px rgba(60,40,20,0.12);
+  box-shadow: 0 -4px 24px rgba(60,40,20,0.12);
   z-index: 50;
 }
 body.page-stats .col-panel-option {
