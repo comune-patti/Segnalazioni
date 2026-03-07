@@ -2029,7 +2029,7 @@ html.dark body.page-stats .info-modal-close:hover { background: rgba(255,255,255
 body.page-stats .table-toggle-bar {
   display: flex;
   justify-content: center;
-  padding: 1.25rem 0 0.5rem;
+  padding: 1.5rem 0 1.5rem;
 }
 body.page-stats .btn-table-toggle {
   display: flex;
@@ -2056,7 +2056,7 @@ body.page-stats .table-toolbar {
   align-items: flex-start;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 /* Dropdown selezione colonne */
 body.page-stats .col-dropdown { position: relative; flex: 1; min-width: 200px; max-width: 380px; }
