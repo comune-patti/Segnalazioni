@@ -2,9 +2,7 @@
    SegnalaOra — Statistiche
    ═══════════════════════════════════════════════════════ */
 
-// CSV locali — generati da GitHub Actions ogni 30 min, già privi di dati personali
-const SHEETS_CSV_APERTE  = 'dati/segnalazioni.csv';
-const SHEETS_CSV_RISOLTE = 'dati/risolte.csv';
+// CSV locali — percorsi letti da js/config.js (APP_CONFIG)
 
 // ─────────────────────────────────────────────
 //  CSV PARSING (condiviso con map.js)
@@ -67,22 +65,8 @@ function parseCSV(text) {
 // ─────────────────────────────────────────────
 let _allReports = [];
 
-// Lista completa delle categorie (uguale al form di segnalazione)
-const ALL_CATEGORIES = [
-  { cat: 'Buche e dissesti stradali',     icon: 'fa-solid fa-road'               },
-  { cat: 'Illuminazione pubblica guasta', icon: 'fa-solid fa-lightbulb'          },
-  { cat: 'Rifiuti abbandonati',           icon: 'fa-solid fa-trash'              },
-  { cat: 'Alberi e verde pubblico',       icon: 'fa-solid fa-tree'               },
-  { cat: 'Perdite idriche',               icon: 'fa-solid fa-droplet'            },
-  { cat: 'Deiezioni non raccolte',        icon: 'fa-solid fa-paw'                },
-  { cat: 'Segnaletica danneggiata',       icon: 'fa-solid fa-triangle-exclamation'},
-  { cat: 'Immobile pericolante',          icon: 'fa-solid fa-house-crack'        },
-  { cat: 'Barriere architettoniche',      icon: 'fa-solid fa-wheelchair'         },
-  { cat: 'Inquinamento acustico',         icon: 'fa-solid fa-volume-high'        },
-  { cat: 'Veicoli abbandonati',           icon: 'fa-solid fa-car'                },
-  { cat: 'Degrado e sicurezza',           icon: 'fa-solid fa-shield-halved'      },
-  { cat: 'Altro',                         icon: 'fa-solid fa-ellipsis'           },
-];
+// Lista completa delle categorie — derivata da APP_CONFIG.destinatari (js/config.js)
+const ALL_CATEGORIES = APP_CONFIG.destinatari.map(d => ({ cat: d.categoria, icon: d.icon }));
 
 // ─────────────────────────────────────────────
 //  CARICAMENTO DATI
@@ -92,8 +76,8 @@ async function loadAll() {
     const t = Date.now();
     const bust = url => url.startsWith('http') ? url + '&t=' + t : url + '?t=' + t;
     const [r1, r2] = await Promise.all([
-      fetch(bust(SHEETS_CSV_APERTE)),
-      fetch(bust(SHEETS_CSV_RISOLTE))
+      fetch(bust(APP_CONFIG.sheetsCsvAperte)),
+      fetch(bust(APP_CONFIG.sheetsCsvRisolte))
     ]);
     const [t1, t2] = await Promise.all([r1.text(), r2.text()]);
     renderStats(parseCSV(t1), parseCSV(t2));
@@ -250,11 +234,7 @@ function renderCategorieChart(reports) {
   const data   = sorted.map(([, n]) => n);
 
   // Palette amber→teal in base alla posizione
-  const palette = [
-    '#d4820a','#e09a2a','#c07020','#f0b040','#b06010',
-    '#3cb4d8','#2a9ec0','#4dcae0','#1a8aaa','#5ad0e8',
-    '#3d5a47','#2d4435'
-  ];
+  const palette = APP_CONFIG.grafici.paletteCategorie;
   const bgColors = sorted.map((_, i) => palette[i % palette.length]);
 
   // Altezza dinamica: 32px per barra + spazio per assi
@@ -328,7 +308,7 @@ function renderUrgenzaChart(reports) {
       labels: ['Alta', 'Normale', 'Bassa'],
       datasets: [{
         data: [counts.Alta, counts.Normale, counts.Bassa],
-        backgroundColor: ['#e53535', '#ff9900', '#3cb4d8'],
+        backgroundColor: [APP_CONFIG.grafici.urgenza.Alta, APP_CONFIG.grafici.urgenza.Normale, APP_CONFIG.grafici.urgenza.Bassa],
         borderColor: chartBorderColor(),
         borderWidth: 3,
         hoverOffset: 8,
@@ -366,7 +346,7 @@ function renderUrgenzaChart(reports) {
 // ─────────────────────────────────────────────
 function renderStatoChart(reports) {
   const order  = ['Nuova', 'In lavorazione', 'Risolta', 'Chiusa'];
-  const colors = ['#d4820a', '#3cb4d8', '#3d5a47', '#a8a090'];
+  const colors = order.map(s => APP_CONFIG.grafici.stato[s]);
   const counts = {};
   reports.forEach(r => {
     const s = r.Stato || 'Nuova';
@@ -439,8 +419,8 @@ function renderTrendChart(reports) {
       datasets: [{
         label: 'Segnalazioni',
         data: sorted.map(([, n]) => n),
-        backgroundColor: 'rgba(212,130,10,0.75)',
-        borderColor: '#d4820a',
+        backgroundColor: APP_CONFIG.grafici.trend.sfondo,
+        borderColor: APP_CONFIG.grafici.trend.bordo,
         borderWidth: 1,
         borderRadius: 4,
         borderSkipped: false,

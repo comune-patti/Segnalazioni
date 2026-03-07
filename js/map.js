@@ -4,16 +4,8 @@
    ═══════════════════════════════════════════════════════ */
 
 // ─────────────────────────────────────────────────────────
-//  CONFIGURAZIONE
+//  CONFIGURAZIONE — valori letti da js/config.js (APP_CONFIG)
 // ─────────────────────────────────────────────────────────
-// CSV locali — generati da GitHub Actions ogni 30 min, già privi di dati personali
-const SHEETS_CSV_APERTE  = 'dati/segnalazioni.csv';
-const SHEETS_CSV_RISOLTE = 'dati/risolte.csv';
-
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwve06JZu-6pGn0KQXMlZR6OCelS_3SWlxjAtK9CTM1De-26D-YXFUVAdQfR8w8OUts/exec';
-
-// Posizione default della mappa
-const MAP_DEFAULT = { lat: 38.1157, lng: 13.3615, zoom: 13 };
 
 // ─────────────────────────────────────────────────────────
 //  STATO
@@ -28,14 +20,14 @@ let highlightedId = null;
 let viewMode      = 'aperte';   // 'aperte' | 'risolte'
 let _focusTimer   = null;       // timer per apertura popup da focusReport
 let currentPage   = 1;
-const PAGE_SIZE   = 10;
+const PAGE_SIZE   = APP_CONFIG.mappa.pageSize;
 
 // ─────────────────────────────────────────────────────────
 //  MAPPA INIT
 // ─────────────────────────────────────────────────────────
 function initMap() {
-  map = L.map('map', { zoomControl: true, maxZoom: 19 }).setView(
-    [MAP_DEFAULT.lat, MAP_DEFAULT.lng], MAP_DEFAULT.zoom
+  map = L.map('map', { zoomControl: true, maxZoom: APP_CONFIG.mappa.maxZoom }).setView(
+    [APP_CONFIG.mappa.lat, APP_CONFIG.mappa.lng], APP_CONFIG.mappa.zoomPubblica
   );
   new L.Hash(map);
 
@@ -120,15 +112,15 @@ function initMap() {
     tooltip:       'SegnalaOra — OpenDataSicilia',
     width:         '50px',
     height:        '58px',
-    expandcontent: 'Web app civica<br/>by <a href="https://opendatasicilia.it" target="_blank" rel="noopener">@opendatasicilia</a>',
+    expandcontent: APP_CONFIG.app.bannerCrediti,
   }).addTo(map);
 }
 
 function goHome() {
   if (markers.length > 0) {
-    map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), { animate: true });
+    map.fitBounds(L.featureGroup(markers).getBounds().pad(APP_CONFIG.mappa.fitBoundsPad), { animate: true });
   } else {
-    map.setView([MAP_DEFAULT.lat, MAP_DEFAULT.lng], MAP_DEFAULT.zoom, { animate: true });
+    map.setView([APP_CONFIG.mappa.lat, APP_CONFIG.mappa.lng], APP_CONFIG.mappa.zoomPubblica, { animate: true });
   }
 }
 
@@ -136,14 +128,14 @@ function goHome() {
 //  CARICAMENTO CSV
 // ─────────────────────────────────────────────────────────
 async function loadData() {
-  const url = viewMode === 'risolte' ? SHEETS_CSV_RISOLTE : SHEETS_CSV_APERTE;
+  const url = viewMode === 'risolte' ? APP_CONFIG.sheetsCsvRisolte : APP_CONFIG.sheetsCsvAperte;
   if (!url) {
     showDemoData();
     return;
   }
 
   const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+  const timeoutId  = setTimeout(() => controller.abort(), APP_CONFIG.mappa.loadTimeout);
 
   try {
     const cacheBust = url.startsWith('http') ? '&t=' : '?t=';
@@ -331,20 +323,18 @@ function updateStats() {
   }
 }
 
-const URGENCY_COLORS = { Alta: '#e53535', Normale: '#ff9900', Bassa: '#3cb4d8' };
-
 function makeMarkerIcon(urgenza, stato) {
   if (stato === 'Risolta') {
     return L.divIcon({
       className: '',
       html: `<svg width="28" height="36" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 0C6.3 0 0 6.3 0 14c0 9.8 14 22 14 22S28 23.8 28 14C28 6.3 21.7 0 14 0z" fill="#3d5a47"/>
+        <path d="M14 0C6.3 0 0 6.3 0 14c0 9.8 14 22 14 22S28 23.8 28 14C28 6.3 21.7 0 14 0z" fill="${APP_CONFIG.marker.Risolta}"/>
         <path d="M8 14l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </svg>`,
       iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -36]
     });
   }
-  const color = URGENCY_COLORS[urgenza] || '#d4820a';
+  const color = APP_CONFIG.marker[urgenza] || APP_CONFIG.marker.default;
   return L.divIcon({
     className: '',
     html: `<svg width="28" height="36" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
@@ -381,12 +371,12 @@ function renderMarkers() {
   });
 
   if (markers.length > 0) {
-    map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15));
+    map.fitBounds(L.featureGroup(markers).getBounds().pad(APP_CONFIG.mappa.fitBoundsPad));
   }
 }
 
 function makePopupHTML(r) {
-  const urgColor  = URGENCY_COLORS[r.Urgenza] || '#d4820a';
+  const urgColor  = APP_CONFIG.marker[r.Urgenza] || APP_CONFIG.marker.default;
   const addrShort = (r.Via ? r.Via + (r.Numero_Civico ? ' ' + r.Numero_Civico : '') + ', ' : '') +
                     (r.Comune || r.Indirizzo_Completo || '');
 
@@ -449,7 +439,7 @@ function renderList() {
     const el = document.createElement('div');
     el.className = 'report-item';
     el.id = 'ri-' + r.ID_Segnalazione;
-    const urgColor  = URGENCY_COLORS[r.Urgenza] || '#d4820a';
+    const urgColor  = APP_CONFIG.marker[r.Urgenza] || APP_CONFIG.marker.default;
     const urgLabel  = r.Urgenza === 'Alta' ? '🔴 Urgente' : r.Urgenza === 'Bassa' ? '🔵 Bassa' : '🟠 Normale';
     const imgUrls   = (r.URL_Immagini || r.URL_Immagine || '').split(',').map(u => u.trim()).filter(Boolean);
     const imgsHtml  = imgUrls.length > 0
@@ -526,7 +516,7 @@ function focusReport(id) {
 
   if (m && window.innerWidth > 768) {
     clearTimeout(_focusTimer);
-    _focusTimer = setTimeout(() => m.openPopup(), 350);
+    _focusTimer = setTimeout(() => m.openPopup(), APP_CONFIG.mappa.popupDelay);
   }
 }
 
@@ -624,7 +614,7 @@ function confirmResolve() {
   res.className   = 'resolve-result';
   res.textContent = '';
 
-  fetch(APPS_SCRIPT_URL, {
+  fetch(APP_CONFIG.appsScriptUrl, {
     method: 'POST',
     mode:   'no-cors',
     headers: { 'Content-Type': 'application/json' },

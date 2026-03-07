@@ -3,20 +3,6 @@
    ═══════════════════════════════════════════════════════ */
 
 // ─────────────────────────────────────────────
-//  CONFIGURAZIONE — compila con i dati del tuo comune
-// ─────────────────────────────────────────────
-const CONFIG = {
-  // URL del Google Apps Script distribuito come Web App
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbwve06JZu-6pGn0KQXMlZR6OCelS_3SWlxjAtK9CTM1De-26D-YXFUVAdQfR8w8OUts/exec',
-
-  // URL pubblico dell'app (lascia vuoto per auto-rilevamento)
-  siteUrl: '',
-
-  // Centro mappa di default (usato quando GPS non disponibile)
-  mapDefault: { lat: 38.1157, lng: 13.3615, zoom: 14 },
-};
-
-// ─────────────────────────────────────────────
 //  STATO APP
 // ─────────────────────────────────────────────
 let map, marker;
@@ -27,11 +13,11 @@ let _ticketCopied    = false;
 let _positionSet     = false;
 const _socialPlatforms = new Set();
 
-const MAX_PHOTOS = 4;
+const MAX_PHOTOS = APP_CONFIG.form.maxFoto;
 
 let reportData = {
-  lat: CONFIG.mapDefault.lat,
-  lng: CONFIG.mapDefault.lng,
+  lat: APP_CONFIG.mappa.lat,
+  lng: APP_CONFIG.mappa.lng,
   address: '',
   via: '',
   civico: '',
@@ -50,22 +36,15 @@ let reportData = {
 // ─────────────────────────────────────────────
 //  CARICAMENTO DESTINATARI
 // ─────────────────────────────────────────────
-async function loadDestinatari() {
-  try {
-    const r    = await fetch('dati/destinatari.json');
-    const data = await r.json();
-    _destinatari = data.destinatari || [];
-    buildDestGrid();
-  } catch(e) {
-    console.warn('destinatari.json non caricato:', e);
-    // Griglia vuota — utente vede solo "dest-error" se prova a inviare
-  }
+function loadDestinatari() {
+  _destinatari = APP_CONFIG.destinatari || [];
+  buildDestGrid();
 }
 
 function buildDestGrid() {
   const grid = document.getElementById('destGrid');
   if (!grid) return;
-  const VISIBLE = 6;
+  const VISIBLE = APP_CONFIG.form.categorieVisibili;
   grid.innerHTML = _destinatari.map((d, i) => `
     <button type="button" class="dest-btn${i >= VISIBLE ? ' dest-extra' : ''}" id="dest-${d.id}" onclick="selectDest('${d.id}')"${i >= VISIBLE ? ' style="display:none"' : ''}>
       <span class="dest-icon"><i class="${d.icon}"></i></span>
@@ -183,7 +162,7 @@ async function processPhoto(file) {
     const reader = new FileReader();
     reader.onload = ev => {
       img.onload = () => {
-        const MAX = 1280;
+        const MAX = APP_CONFIG.form.maxRisoluzioneImg;
         let w = img.width, h = img.height;
         if (w > MAX || h > MAX) {
           if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -192,7 +171,7 @@ async function processPhoto(file) {
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        const base64 = canvas.toDataURL('image/jpeg', 0.85);
+        const base64 = canvas.toDataURL('image/jpeg', APP_CONFIG.form.qualitaJpeg);
 
         reportData.photos.push({ base64, dims: `${w}x${h}`, exifLat, exifLng });
         reportData.hasPhoto = true;
@@ -276,8 +255,8 @@ function toggleMap() {
 function initMap() {
   if (map) { map.invalidateSize(); return; }
 
-  const zoom = _positionSet ? 17 : CONFIG.mapDefault.zoom;
-  map = L.map('map', { maxZoom: 20 }).setView([reportData.lat, reportData.lng], zoom);
+  const zoom = _positionSet ? 17 : APP_CONFIG.mappa.zoomForm;
+  map = L.map('map', { maxZoom: APP_CONFIG.mappa.maxZoomForm }).setView([reportData.lat, reportData.lng], zoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
@@ -514,7 +493,7 @@ async function sendReport() {
   const addr     = document.getElementById('addressInput').value || reportData.address;
   const urgLabel = urgenza === 'Alta' ? '🔴 URGENTE — ' : urgenza === 'Bassa' ? '🟢 ' : '🟡 ';
 
-  const siteUrl = CONFIG.siteUrl
+  const siteUrl = APP_CONFIG.app.siteUrl
     || window.location.href.replace('index.html', '').split('?')[0];
 
   const siteBase = siteUrl.replace(/\/?$/, '/');
@@ -532,7 +511,7 @@ async function sendReport() {
     `📧 Email: ${emailSegnalante}`,
     `🕐 ${now.toLocaleString('it-IT')}`,
     photoUrls.length > 0 ? `📷 Foto: ${photoUrls.join(', ')}` : '',
-    `#SegnalaOra #${cat.replace(/[^a-zA-Z]/g,'')}`,
+    `${APP_CONFIG.app.hashtag} #${cat.replace(/[^a-zA-Z]/g,'')}`,
     ticketId,
     `\n──────────────────────────────────────`,
     `Per segnare questa segnalazione come RISOLTA:`,
@@ -551,8 +530,8 @@ async function sendReport() {
     const socialBase = [
       `${urgLabel}${cat}`,
       `📍 ${addr}`,
-      descr ? `📝 ${descr.length > 120 ? descr.slice(0, 117) + '…' : descr}` : '',
-      `#SegnalaOra #${cat.replace(/[^a-zA-Z0-9]/g, '')}`,
+      descr ? `📝 ${descr.length > APP_CONFIG.social.maxTestoChars ? descr.slice(0, APP_CONFIG.social.maxTestoChars - 3) + '…' : descr}` : '',
+      `${APP_CONFIG.app.hashtag} #${cat.replace(/[^a-zA-Z0-9]/g, '')}`,
     ].filter(Boolean).join('\n');
 
     const mapPageUrl = siteBase + 'mappa.html';
@@ -576,7 +555,7 @@ async function sendReport() {
   }
 
   // 1. POST JSON ad Apps Script (async — dopo l'apertura sincrona delle finestre social)
-  if (CONFIG.appsScriptUrl) {
+  if (APP_CONFIG.appsScriptUrl) {
     const payload = {
       ID_Segnalazione:    ticketId,
       Timestamp_UTC:      now.toISOString(),
@@ -620,7 +599,7 @@ async function sendReport() {
       ...Object.fromEntries(reportData.photos.map((p, i) => [`imageBase64_${i + 1}`, p.base64])),
     };
     try {
-      await fetch(CONFIG.appsScriptUrl, {
+      await fetch(APP_CONFIG.appsScriptUrl, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -634,7 +613,7 @@ async function sendReport() {
         data: now.toLocaleDateString('it-IT'),
         ora: now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
         urgenza, nome, email: emailSegnalante, stato: 'Nuova' });
-      localStorage.setItem('segnalaora_profilo', JSON.stringify(profilo.slice(0, 50)));
+      localStorage.setItem('segnalaora_profilo', JSON.stringify(profilo.slice(0, APP_CONFIG.form.maxStoriaProfilo)));
     } catch(e) {}
   }
 

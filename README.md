@@ -75,6 +75,7 @@ statistiche.html ◀── fetch CSV ──┤  dati/segnalazioni.csv
 
 | File | Ruolo |
 | --- | --- |
+| `js/config.js` | **Unico file da modificare al fork** — tutte le costanti configurabili |
 | `index.html` | Form wizard segnalazione — 4 step |
 | `mappa.html` | Mappa pubblica segnalazioni interattiva |
 | `statistiche.html` | Dashboard grafici + Open Data (tabella + export CSV) |
@@ -93,45 +94,79 @@ statistiche.html ◀── fetch CSV ──┤  dati/segnalazioni.csv
 
 ## Setup
 
-### 1. Google Sheets
+> Guida dettagliata passo passo in `doc/guida-setup.md`. Di seguito il riepilogo rapido.
 
-- Crea un foglio con due tab: **Segnalazioni** e **Risolte**
-- Importa `dati/template-google-sheets.csv` come intestazione (riga 1) su entrambi i tab
-- **File → Pubblica sul Web → CSV** per ciascun tab → copia gli URL e incollali nelle costanti `SHEETS_CSV_APERTE` / `SHEETS_CSV_RISOLTE` in `js/statistiche.js` e nel workflow `sync-sheets.yml`
+### 1. Fork del repository
 
-### 2. Google Apps Script
+Clicca **Fork** su GitHub e scegli il tuo account come destinazione.
 
-- Vai su [script.google.com](https://script.google.com) → Nuovo progetto
+### 2. Google Sheets
+
+- Crea un foglio con tre tab: **Main**, **Aperte**, **Risolte**
+- Nel tab *Aperte* e *Risolte* incolla le formule `FILTER` descritte in `doc/guida-setup.md`
+- **File → Pubblica sul Web → CSV** per ciascun tab → copia i due URL CSV
+
+### 3. Google Apps Script
+
+- Vai su **Estensioni → Apps Script** dal tuo foglio
 - Incolla il contenuto di `dati/apps-script.gs`
-- Imposta `SHEET_ID` e `SHEET_NAME` con i valori del tuo foglio
+- Imposta `SHEET_ID`, `GITHUB_OWNER`, `GITHUB_REPO` con i tuoi valori
 - **Distribuisci → Nuova distribuzione → App web** — Esegui come: Me | Accesso: Chiunque
-- Incolla l'URL `/exec` nel campo `appsScriptUrl` del CONFIG in `index.html`
+- Copia l'URL `/exec` generato
 
-### 3. Personalizzazione Comune
+### 4. Compila `js/config.js` — **unico file da modificare**
 
-Nel blocco `CONFIG` di `index.html` compila:
+Apri `js/config.js` e inserisci i valori raccolti nei passi precedenti:
 
 ```js
-comune: {
-  nome:         'Comune di ...',
-  emailTecnico: 'ufficio.tecnico@comune.it',
-  emailPolizia: 'polizialocale@comune.it',
-  whatsapp:     '+39...',
-  twitter:      '@ComuneXX',
-  facebookPage: 'https://www.facebook.com/ComuneXX',
-  siteUrl:      'https://tuonome.github.io/Segnalazioni/',
-}
+const APP_CONFIG = {
+  appsScriptUrl:    'https://script.google.com/macros/s/.../exec',
+  sheetsCsvAperte:  'https://docs.google.com/spreadsheets/d/e/.../pub?...&output=csv',
+  sheetsCsvRisolte: 'https://docs.google.com/spreadsheets/d/e/.../pub?...&output=csv',
+
+  app: {
+    nome:    'SegnalaOra',
+    siteUrl: 'https://TUO-USERNAME.github.io/Segnalazioni/',
+    hashtag: '#SegnalaOra',
+    // ...
+  },
+
+  pa: {
+    nome:         'Comune di [Nome Comune]',
+    sito:         'https://www.comune.[nome].it',
+    emailDefault: 'protocollo@comune.[nome].it',
+  },
+
+  mappa: {
+    lat: 38.1157,  // latitudine centro comune
+    lng: 13.3615,  // longitudine centro comune
+    // ...
+  },
+
+  destinatari: [
+    // modifica le email con quelle reali del tuo comune
+    { id:'strade', nome:'Buche stradali', email:'lavori@comune.[nome].it', /* ... */ },
+    // ...
+  ],
+};
 ```
 
-### 4. Upload immagini (opzionale)
+Tutti gli altri file JS leggono da `APP_CONFIG` — non vanno toccati.
 
-- Genera un **GitHub Personal Access Token** con scope `repo`
+### 5. Upload immagini (opzionale)
+
+- Genera un **GitHub Personal Access Token** (Fine-grained, scope `Contents: Read and write`)
 - In Apps Script → Impostazioni progetto → Proprietà script → aggiungi `GITHUB_TOKEN = <token>`
-- Il token non va mai scritto nel codice
+- Il token non va mai scritto nel codice sorgente
 
-### 5. GitHub Pages
+### 6. Workflow GitHub Actions
+
+Apri `.github/workflows/sync-sheets.yml` e aggiorna le variabili `CSV_APERTE`, `CSV_RISOLTE`, `CSV_MAIN` con i tuoi URL CSV.
+
+### 7. GitHub Pages
 
 - Repository → Settings → Pages → Branch: `master` / `(root)`
+- Il sito sarà disponibile su `https://TUO-USERNAME.github.io/Segnalazioni/`
 
 ---
 
