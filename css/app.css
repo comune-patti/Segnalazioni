@@ -160,6 +160,45 @@
 .info-modal .credits a { color: var(--amber); text-decoration: none; }
 .info-modal .credits a:hover { text-decoration: underline; }
 
+/* ─── Demo Banner ───────────────────────────────────────────
+   Per disattivare: imposta  display: none  sulla riga sotto  */
+.demo-banner {
+  display: flex;                        /* ← cambia in none per disattivare */
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.35rem 2rem;
+  background: rgba(212,130,10,0.1);
+  border-bottom: 1px solid rgba(212,130,10,0.25);
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #a06008;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+.demo-banner a { color: inherit; text-decoration: none; }
+.demo-banner a:hover { text-decoration: underline; }
+.demo-banner-close {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.55;
+  font-size: 0.85rem;
+  padding: 0.1rem 0.25rem;
+  line-height: 1;
+}
+.demo-banner-close:hover { opacity: 1; }
+html.dark .demo-banner {
+  background: rgba(212,130,10,0.08);
+  border-bottom-color: rgba(212,130,10,0.18);
+  color: var(--amber);
+}
+
 /* Header condiviso — altezza uniforme su tutte le pagine */
 header, .stats-header { padding: 0.9rem 1.5rem; gap: 0.9rem; }
 @media (max-width: 640px) {
