@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════════════════
    SegnalaOra — Mappa segnalazioni civiche
    Logica JavaScript della pagina index.html
-   Versione con supporto tema chiaro/scuro per la mappa
    ═══════════════════════════════════════════════════════ */
 
 // ─────────────────────────────────────────────────────────
@@ -25,10 +24,6 @@ let filteredReports = [];
 let markers         = [];
 let markerById      = {};   // ID_Segnalazione → Leaflet marker
 let map;
-let osmLayerLight;          // Layer OSM chiaro (default)
-let osmLayerDark;           // Layer OSM scuro
-let satelliteLayer;         // Layer satellite
-let currentMapStyle = 'osm'; // 'osm' o 'satellite'
 let activeFilters = { urgenza: 'all', stato: 'all', periodo: 'all' };
 let activeCats    = null;   // null = tutte selezionate; Set = solo queste categorie
 let highlightedId = null;
@@ -46,25 +41,17 @@ function initMap() {
   );
   new L.Hash(map);
 
-  // Crea i layer mappa
-  osmLayerLight = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> By <a href="https://opendatasicilia.it/" title="@opendatasicilia" target="_blank">@opendatasicilia</a>',
     maxZoom: 19
   });
 
-  // Layer OSM scuro (Stadia Maps Alidade Smooth Dark)
-  osmLayerDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, © <a href="https://carto.com/attributions">CARTO</a> By <a href="https://opendatasicilia.it/" title="@opendatasicilia" target="_blank">@opendatasicilia</a>',
-    maxZoom: 19
-  });
-
-  satelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+  const satelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
     attribution: '© <a href="https://maps.google.com" target="_blank">Google Maps</a> By <a href="https://opendatasicilia.it/" title="@opendatasicilia" target="_blank">@opendatasicilia</a>',
     maxZoom: 19
   });
 
-  // Applica il layer iniziale in base al tema
-  applyMapTheme();
+  osmLayer.addTo(map);
 
   // Toggle grafico OSM / Satellite
   const LayerToggleControl = L.Control.extend({
@@ -80,19 +67,17 @@ function initMap() {
       L.DomEvent.disableClickPropagation(wrap);
 
       L.DomEvent.on(btnOsm, 'click', () => {
-        currentMapStyle = 'osm';
-        applyMapTheme();
+        m.removeLayer(satelliteLayer);
+        osmLayer.addTo(m);
         btnOsm.classList.add('active');
         btnSat.classList.remove('active');
       });
-      
       L.DomEvent.on(btnSat, 'click', () => {
-        currentMapStyle = 'satellite';
-        applyMapTheme();
+        m.removeLayer(osmLayer);
+        satelliteLayer.addTo(m);
         btnSat.classList.add('active');
         btnOsm.classList.remove('active');
       });
-      
       return wrap;
     }
   });
@@ -139,34 +124,6 @@ function initMap() {
     height:        '58px',
     expandcontent: APP_CONFIG.app.bannerCrediti,
   }).addTo(map);
-}
-
-/**
- * Applica il layer mappa appropriato in base al tema corrente
- * e alla scelta dell'utente (OSM o Satellite)
- */
-function applyMapTheme() {
-  // Rimuovi tutti i tile layer correnti
-  map.eachLayer((layer) => {
-    if (layer instanceof L.TileLayer) {
-      map.removeLayer(layer);
-    }
-  });
-
-  // Determina se il tema scuro è attivo
-  const isDark = document.documentElement.classList.contains('dark');
-  
-  if (currentMapStyle === 'satellite') {
-    // Satellite: sempre lo stesso (già sufficientemente scuro)
-    satelliteLayer.addTo(map);
-  } else {
-    // Mappa OSM: scegli versione in base al tema
-    if (isDark) {
-      osmLayerDark.addTo(map);
-    } else {
-      osmLayerLight.addTo(map);
-    }
-  }
 }
 
 function goHome() {
@@ -894,25 +851,6 @@ function closeCatPanel() {
   if (panel)   panel.style.display = 'none';
   if (chevron) chevron.className   = 'col-dd-chevron fa-solid fa-chevron-down';
 }
-
-// Ascolta il cambio tema per aggiornare la mappa
-document.addEventListener('themechange', function(e) {
-  // Ricarica i layer della mappa quando cambia il tema
-  applyMapTheme();
-  
-  // Aggiorna lo stile del toggle button se necessario
-  const btnOsm = document.querySelector('.mlt-btn:first-child');
-  const btnSat = document.querySelector('.mlt-btn:last-child');
-  if (btnOsm && btnSat) {
-    if (currentMapStyle === 'osm') {
-      btnOsm.classList.add('active');
-      btnSat.classList.remove('active');
-    } else {
-      btnSat.classList.add('active');
-      btnOsm.classList.remove('active');
-    }
-  }
-});
 
 // Rileva ?risolvi=TOKEN nell'URL e apre il modal automaticamente
 const _urlId = new URLSearchParams(location.search).get('risolvi');

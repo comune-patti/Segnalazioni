@@ -1149,7 +1149,70 @@ html.dark body.page-form .send-btn:hover { border-color: var(--amber); backgroun
 html.dark body.page-form .btn-next { background: #1e1812; border-color: rgba(255,255,255,0.12); color: #f5f0e8; }
 html.dark body.page-form .btn-next:hover { border-color: var(--amber); background: rgba(212,130,10,0.08); color: var(--amber); }
 
+/* ── Dark mode legenda mappa ── */
+html.dark .legend {
+  background: #1a1410;
+  color: #0f0d0b;
+  border-color: rgba(255, 255, 255, 0.1);
+}
 
+html.dark .legend-title {
+  color: rgba(245, 240, 232, 0.55);
+}
+
+/*
+html.dark body.page-map #map {
+  filter: brightness(0.8) invert(1) hue-rotate(180deg);
+}*/
+
+/* ── Dark mode: legenda mappa ── */
+html.dark body.page-map .legend {
+  background: #1a1410;
+  color: rgba(245, 240, 232, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html.dark body.page-map .legend-title {
+  color: rgba(245, 240, 232, 0.45);
+}
+
+
+/* Miglioramenti per la mappa in dark mode */
+html.dark body.page-map .leaflet-control-attribution {
+  background: rgba(26,20,16,0.8) !important;
+  color: rgba(245,240,232,0.45) !important;
+  border-radius: 4px 0 0 0 !important;
+}
+
+html.dark body.page-map .leaflet-control-attribution a {
+  color: var(--amber) !important;
+}
+
+html.dark body.page-map .leaflet-control-attribution a:hover {
+  color: #e8a030 !important;
+  text-decoration: underline;
+}
+
+html.dark body.page-map .leaflet-popup-content-wrapper {
+  background: #1a1410;
+  color: #f5f0e8;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+html.dark body.page-map .leaflet-popup-tip {
+  background: #1a1410;
+  border-color: rgba(255,255,255,0.08);
+}
+
+html.dark body.page-map .leaflet-popup-content {
+  color: #f5f0e8;
+}
+
+html.dark body.page-map .popup-descr {
+  border-top-color: rgba(255,255,255,0.1);
+  color: rgba(245,240,232,0.75);
+}
 
 /* ═══════════════════════════════════════════════════════
    PAGINA: MAPPA — mappa.html (body.page-map)
